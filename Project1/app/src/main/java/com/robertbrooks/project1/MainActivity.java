@@ -1,17 +1,34 @@
 package com.robertbrooks.project1;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
+
+    // Buttons
+    Button mPlayButton;
+    Button mStopButton;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mPlayButton = (Button) this.findViewById(R.id.play_btn);
+        mStopButton = (Button) this.findViewById(R.id.stop_btn);
+
+        mPlayButton.setOnClickListener(this);
+        mStopButton.setOnClickListener(this);
+
+        intent = new Intent(this, PlayerService.class);
     }
 
 
@@ -35,5 +52,17 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        //TODO: CHANGE TO SWITCH CASE WHEN FORWARD AND BACK BUTTONS ARE ADDED
+        if (v == mPlayButton) {
+            startService(intent);
+            finish();
+        } else if (v == mStopButton) {
+            stopService(intent);
+            finish();
+        }
     }
 }
