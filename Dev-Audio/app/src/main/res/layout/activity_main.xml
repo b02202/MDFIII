@@ -12,13 +12,15 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:id="@+id/linearLayout">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/prev_btn"
-            android:background="@drawable/ic_av_skip_previous" />
+            android:background="@drawable/ic_av_skip_previous"
+            android:onClick="previous"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,20 +32,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/next_btn"
-            android:background="@drawable/ic_av_skip_next" />
+            android:background="@drawable/ic_av_skip_next"
+            android:onClick="next"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/pause_btn"
             android:background="@drawable/ic_av_pause_circle_outline"
-            android:onClick="stop"/>
+            android:onClick="pause"/>
+
+
 
 
 
 
         </LinearLayout>
 
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/stop_btn"
+        android:background="@drawable/ic_av_pause_circle_outline"
+        android:onClick="stop"
+        android:layout_marginTop="72dp"
+        android:layout_below="@+id/linearLayout"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -1,5 +1,7 @@
 package com.robertbrooks.dev_audio;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -10,9 +12,11 @@ import android.view.MenuItem;
 import android.view.View;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 
-public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPreparedListener {
+public class MainActivity extends Activity implements MediaPlayer.OnPreparedListener {
 
     private static final String SAVE_POSITION = "MainActivity.SAVE_POSITION";
 
@@ -20,6 +24,12 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
     boolean mActivityResumed;
     boolean mPrepared;
     int mAudioPosition;
+    String track1;
+    String track2;
+    String track3;
+    ArrayList<String> trackList;
+    final int[] songs = {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
+
 
 
 
@@ -27,6 +37,15 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // create list of audio tracks from raw folder
+        trackList = new ArrayList<>();
+        track1 = "android.resource://" + getPackageName() + "/raw/gimme_shelter";
+        track2 = "android.resource://" + getPackageName() + "/raw/brown_sugar";
+        track3 = "android.resource://" + getPackageName() + "/raw/doom_and_gloom";
+        trackList.add(track1);
+        trackList.add(track2);
+        trackList.add(track3);
         mPrepared = mActivityResumed = false;
         mAudioPosition = 0;
 
@@ -34,11 +53,13 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
             mAudioPosition = savedInstanceState.getInt(SAVE_POSITION, 0);
         }
 
+
+
     }
 
 
 
-        @Override
+       @Override
         protected void onStart () {
             super.onStart();
 
@@ -47,7 +68,8 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
             mPlayer.setOnPreparedListener(this);
 
             try {
-                mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
+              mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -117,6 +139,7 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
 
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -140,11 +163,34 @@ public class MainActivity extends ActionBarActivity implements MediaPlayer.OnPre
     }
 
     public void play(View v) {
+        Intent intent = new Intent(this, playerService.class);
+        startService(intent);
         mPlayer.start();
     }
 
-    public void stop(View v) {
+    public void pause(View v) {
         mPlayer.pause();
+    }
+
+    public void next(View v) throws IOException {
+        mPlayer.reset();
+        mPlayer.setDataSource(this, Uri.parse(track2));
+        mPlayer.prepare();
+        mPlayer.start();
+    }
+
+    public void previous(View v) throws IOException {
+        mPlayer.reset();
+        mPlayer.setDataSource(this, Uri.parse(track1));
+        mPlayer.prepare();
+        mPlayer.start();
+    }
+
+    public void stop(View v) throws IOException {
+        Intent intent = new Intent(this, playerService.class);
+        stopService(intent);
+        mPlayer.stop();
+
     }
 
 }
