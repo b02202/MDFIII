@@ -3,7 +3,10 @@ package com.robertbrooks.project1;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.IBinder;
+
+import java.io.IOException;
 
 /**
  * Created by Bob on 4/6/2015.
@@ -20,6 +23,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     @Override
     public void onCreate() {
         mPlayer = MediaPlayer.create(this, R.raw.gimme_shelter);
+
         mPlayer.setOnCompletionListener(this);
     }
 
@@ -30,7 +34,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
             mPlayer.start();
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override

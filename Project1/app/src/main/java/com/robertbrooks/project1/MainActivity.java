@@ -59,10 +59,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //TODO: CHANGE TO SWITCH CASE WHEN FORWARD AND BACK BUTTONS ARE ADDED
         if (v == mPlayButton) {
             startService(intent);
-            finish();
+
         } else if (v == mStopButton) {
             stopService(intent);
-            finish();
+
         }
     }
 }
