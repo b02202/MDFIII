@@ -7,10 +7,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -20,25 +24,37 @@ import java.io.IOException;
 public class PlayerService extends Service  implements MediaPlayer.OnPreparedListener {
     public static final int STANDARD_NOTIFICATION = 0x01001;
     public static final int EXPANDED_NOTIFICATION = 0x01002;
-
-
-
+    private static final String SAVE_POSITION = "PlayerService.SAVE_POSITION";
+    boolean mActivityResumed;
+    boolean mPrepared;
+    int mAudioPosition;
 
     MediaPlayer mPlayer;
 
+    // create binder
+    public class BoundServiceBinder extends Binder {
+        public PlayerService getService() {
+            return PlayerService.this;
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return new BoundServiceBinder();
+    }
+
+    // Binder toast
+    public void showToast() {
+        Toast.makeText(this, "Text goes here", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onCreate() {
-        mPlayer = MediaPlayer.create(this, R.raw.gimme_shelter);
 
-        mPlayer.setOnPreparedListener(this);
-
-        //mPlayer.setOnCompletionListener(this);
-
+        //mPlayer = MediaPlayer.create(this, R.raw.gimme_shelter);
+        mPlayer = new MediaPlayer();
+        mPrepared = mActivityResumed = false;
+        mAudioPosition = 0;
 
     }
 
@@ -46,8 +62,25 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (!mPlayer.isPlaying()) {
-            mPlayer.start();
+        // new mPlayer
+        mPlayer = new MediaPlayer();
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setOnPreparedListener(this);
+
+        try {
+            mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            mPlayer.release();
+            mPlayer = null;
+        }
+
+        if (mPlayer != null) {
+
+                mPlayer.prepareAsync();
+                mPlayer.start();
+
+            // Notification implementation
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
@@ -76,17 +109,20 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             builder.setAutoCancel(false);
             builder.setOngoing(true);
 
-            startForeground(STANDARD_NOTIFICATION, builder.build());
+            startForeground(EXPANDED_NOTIFICATION, builder.build());
         }
 
         return START_NOT_STICKY;
     }
 
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mPlayer.isPlaying()) {
+        if (mPlayer != null) {
             mPlayer.stop();
+            mPrepared = false;
         }
 
         stopForeground(true);
@@ -94,15 +130,15 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         mPlayer.release();
     }
 
-    /*@Override
-    public void onCompletion(MediaPlayer mp) {
-        stopSelf();
-
-    }*/
-
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+        mPrepared = true;
 
+        if (mPlayer != null && mActivityResumed) {
+            mPlayer.seekTo(mAudioPosition);
+            mPlayer.start();
+        }
     }
+
 }

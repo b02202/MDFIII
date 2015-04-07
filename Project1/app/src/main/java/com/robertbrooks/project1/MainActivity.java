@@ -2,10 +2,13 @@ package com.robertbrooks.project1;
 
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,12 +17,13 @@ import android.widget.Button;
 
 
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements ServiceConnection,View.OnClickListener {
     private static final int FOREGROUND_NOTIFICATION = 0x01001;
     // Buttons
     Button mPlayButton;
     Button mStopButton;
     Intent intent;
+    Intent bindIntent;
 
 
     @Override
@@ -34,6 +38,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mStopButton.setOnClickListener(this);
 
         intent = new Intent(this, PlayerService.class);
+
+        Intent bindIntent = new Intent(this, PlayerService.class);
 
 
     }
@@ -65,11 +71,45 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         //TODO: CHANGE TO SWITCH CASE WHEN FORWARD AND BACK BUTTONS ARE ADDED
         if (v == mPlayButton) {
+            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
             startService(intent);
 
         } else if (v == mStopButton) {
+            unbindService(this);
             stopService(intent);
 
         }
     }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+
+        PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
+        PlayerService theService = binder.getService();
+        theService.showToast();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+
+    }
+
+
+        @Override
+        protected void onStart () {
+            super.onStart();
+
+            bindIntent = new Intent(this, PlayerService.class);
+            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
+        }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        unbindService(this);
+    }
+
+
 }
