@@ -1,21 +1,26 @@
 package com.robertbrooks.project1;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
 
-public class MainActivity extends Activity implements View.OnClickListener {
 
+public class MainActivity extends Activity implements View.OnClickListener {
+    private static final int FOREGROUND_NOTIFICATION = 0x01001;
     // Buttons
     Button mPlayButton;
     Button mStopButton;
     Intent intent;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mStopButton.setOnClickListener(this);
 
         intent = new Intent(this, PlayerService.class);
+
+
     }
 
 
