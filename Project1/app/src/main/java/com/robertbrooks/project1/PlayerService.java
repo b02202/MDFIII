@@ -2,6 +2,7 @@ package com.robertbrooks.project1;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +17,7 @@ import java.io.IOException;
 /**
  * Created by Bob on 4/6/2015.
  */
-public class PlayerService extends Service implements MediaPlayer.OnCompletionListener {
+public class PlayerService extends Service  implements MediaPlayer.OnPreparedListener {
     public static final int STANDARD_NOTIFICATION = 0x01001;
     public static final int EXPANDED_NOTIFICATION = 0x01002;
 
@@ -34,7 +35,9 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     public void onCreate() {
         mPlayer = MediaPlayer.create(this, R.raw.gimme_shelter);
 
-        mPlayer.setOnCompletionListener(this);
+        mPlayer.setOnPreparedListener(this);
+
+        //mPlayer.setOnCompletionListener(this);
 
 
     }
@@ -47,6 +50,18 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
             mPlayer.start();
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+            // Intent
+            Intent nIntent = new Intent(this, MainActivity.class);
+
+            // Pending Intent
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, STANDARD_NOTIFICATION, nIntent, 0);
+            // Create default action intent
+            // Set the default action
+
+            // Set ContentIntent
+            builder.setContentIntent(pendingIntent);
+
             builder.setSmallIcon(R.drawable.ic_av_play_arrow);
             builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
             builder.setContentTitle("Playing Music");
@@ -79,9 +94,15 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         mPlayer.release();
     }
 
-    @Override
+    /*@Override
     public void onCompletion(MediaPlayer mp) {
         stopSelf();
+
+    }*/
+
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
 
     }
 }
