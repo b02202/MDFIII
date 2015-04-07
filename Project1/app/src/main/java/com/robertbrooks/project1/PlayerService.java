@@ -67,6 +67,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setOnPreparedListener(this);
 
+
         try {
             mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
         } catch (IOException e) {
@@ -77,8 +78,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         if (mPlayer != null) {
 
-                mPlayer.prepareAsync();
-                mPlayer.start();
+            mPlayer.prepareAsync();
+            mPlayer.start();
 
             // Notification implementation
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -135,9 +136,9 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public void onPrepared(MediaPlayer mp) {
         mPrepared = true;
 
-        if (mPlayer != null && mActivityResumed) {
-            mPlayer.seekTo(mAudioPosition);
-            mPlayer.start();
+        if (mPlayer != null) {
+            //mPlayer.seekTo(mAudioPosition);
+            mp.start();
         }
     }
 
