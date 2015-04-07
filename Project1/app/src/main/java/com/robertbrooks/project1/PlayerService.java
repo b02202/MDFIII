@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
@@ -16,7 +17,8 @@ import java.io.IOException;
  * Created by Bob on 4/6/2015.
  */
 public class PlayerService extends Service implements MediaPlayer.OnCompletionListener {
-    public static final int FOREGROUND_SERVICE = 0x01001;
+    public static final int STANDARD_NOTIFICATION = 0x01001;
+    public static final int EXPANDED_NOTIFICATION = 0x01002;
 
 
 
@@ -46,12 +48,20 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
             builder.setSmallIcon(R.drawable.ic_av_play_arrow);
+            builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
             builder.setContentTitle("Playing Music");
             builder.setContentText("Stones Playing");
+            NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+            bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
+            bigTextStyle.setBigContentTitle("The Rolling Stones");
+            bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
+                    " and are considered the best in the business!");
+            builder.setStyle(bigTextStyle);
+            nManager.notify(EXPANDED_NOTIFICATION, builder.build());
             builder.setAutoCancel(false);
             builder.setOngoing(true);
 
-            startForeground(FOREGROUND_SERVICE, builder.build());
+            startForeground(STANDARD_NOTIFICATION, builder.build());
         }
 
         return START_NOT_STICKY;
