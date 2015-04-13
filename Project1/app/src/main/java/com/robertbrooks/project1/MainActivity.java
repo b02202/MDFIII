@@ -10,20 +10,31 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import com.robertbrooks.project1.PlayerService.BoundServiceBinder;
+
+import java.io.IOException;
 
 
-
-public class MainActivity extends Activity implements ServiceConnection,View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener {
+    public static String TAG = "MainActivity";
     private static final int FOREGROUND_NOTIFICATION = 0x01001;
     // Buttons
     Button mPlayButton;
     Button mStopButton;
+    Button mPauseButton;
+    Button mNextButton;
+    Button mPreviousButton;
+
     Intent intent;
     Intent bindIntent;
+    PlayerService playerSrv;
+    Intent playIntent;
+    private boolean playerBound = false;
 
 
     @Override
@@ -33,16 +44,63 @@ public class MainActivity extends Activity implements ServiceConnection,View.OnC
 
         mPlayButton = (Button) this.findViewById(R.id.play_btn);
         mStopButton = (Button) this.findViewById(R.id.stop_btn);
+        mPauseButton = (Button) this.findViewById(R.id.pause_btn);
+        mNextButton = (Button) this.findViewById(R.id.next_btn);
+        mPreviousButton = (Button) this.findViewById(R.id.previous_btn);
 
         mPlayButton.setOnClickListener(this);
         mStopButton.setOnClickListener(this);
+        mPauseButton.setOnClickListener(this);
+        mNextButton.setOnClickListener(this);
+        mPreviousButton.setOnClickListener(this);
 
-        intent = new Intent(this, PlayerService.class);
+
+        //intent = new Intent(this, PlayerService.class);
 
         Intent bindIntent = new Intent(this, PlayerService.class);
+        //playIntent = new Intent(this, PlayerService.class);
 
 
     }
+    ServiceConnection playerConnect = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
+            playerSrv = binder.getService();
+            playerBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            playerBound = false;
+        }
+    };
+
+    // Connect to Player Service
+    /*private ServiceConnection playerConnect = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    }*/
+        /*@Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
+            playerBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            playerBound = false;
+        }*/
+
+
+
 
 
     @Override
@@ -70,37 +128,65 @@ public class MainActivity extends Activity implements ServiceConnection,View.OnC
     @Override
     public void onClick(View v) {
         //TODO: CHANGE TO SWITCH CASE WHEN FORWARD AND BACK BUTTONS ARE ADDED
-        if (v == mPlayButton) {
-            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
-            startService(intent);
 
-        } else if (v == mStopButton) {
-            unbindService(this);
-            stopService(intent);
+        switch (v.getId()) {
+            case R.id.play_btn:
 
+               // bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
+                startService(playIntent);
+
+                break;
+
+            case R.id.stop_btn:
+                //unbindService(this);
+                stopService(playIntent);
+                break;
+
+            case R.id.pause_btn:
+                playerSrv.onPause();
+
+                break;
+
+            case R.id.previous_btn:
+                try {
+                    playerSrv.skipback();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            case R.id.next_btn:
+                if (playerBound) {
+                    try {
+                        playerSrv.skipForward();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, "Player is bound skipping to next song.");
+                }
+                Log.d(TAG, "Next Button Clicked");
+
+                break;
         }
-    }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-
-        PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
-        PlayerService theService = binder.getService();
-        theService.showToast();
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
 
     }
+
+
+
 
 
         @Override
         protected void onStart () {
             super.onStart();
 
-            bindIntent = new Intent(this, PlayerService.class);
-            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
+            /*if (playIntent == null) {*/
+                playIntent = new Intent(this, PlayerService.class);
+                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );
+                //startService(playIntent);
+            //}
+            /*bindIntent = new Intent(this, PlayerService.class);
+            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);*/
         }
 
 
@@ -108,8 +194,23 @@ public class MainActivity extends Activity implements ServiceConnection,View.OnC
     protected void onStop() {
         super.onStop();
 
-        unbindService(this);
+        if (playerBound) {
+            unbindService(playerConnect);
+            playerBound = false;
+            Log.d(TAG, "Player was bound, unbinding.");
+        }
+        //unbindService(playerConnect);
     }
 
 
+
+    /*@Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+
+    }*/
 }
