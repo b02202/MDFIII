@@ -40,6 +40,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public int index;
     int trackIndex = 0;
     int [] songs;
+    int currentPosition = 0;
 
     ArrayList<Integer> songIdList;
     ArrayList<String> songArrayList;
@@ -143,7 +144,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             e.printStackTrace();
         }
 
-        mPlayer.start();
+       // mPlayer.start();
 
     }
 
@@ -219,9 +220,17 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        Log.d(TAG, "Track info: " + mPlayer.getTrackInfo().toString());
+        Log.d(TAG, "Track info: " + mPlayer.getCurrentPosition());
+        Log.d(TAG, "Activity Resumed = " + mActivityResumed);
        // start mPlayer
-        mp.start();
+        if (mActivityResumed) {
+            mp.seekTo(currentPosition);
+            mp.start();
+            mActivityResumed = false;
+        } else {
+            mp.start();
+        }
+        //mp.start();
 
        /* mPrepared = true;
 
@@ -238,10 +247,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
 
 
-    // resume playback after pause
-    public void onResume() {
-        onPlayerResume(mAudioPosition);
-    }
+
 
 
 
@@ -251,7 +257,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-
+            mPlayer.start();
             // Notification implementation
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -293,8 +299,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public void onDestroy() {
         super.onDestroy();
         if (mPlayer != null) {
-            mPlayer.stop();
-            mAudioPosition = mPlayer.getCurrentPosition();
+            //mPlayer.stop();
+           // mAudioPosition = mPlayer.getCurrentPosition();
             mPrepared = false;
         }
 
@@ -326,8 +332,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         mActivityResumed = false;
         if (mPlayer.isPlaying()) {
             mPlayer.pause();
+            currentPosition = mPlayer.getCurrentPosition();
             mActivityResumed = true;
-
         }
     }
 
@@ -370,6 +376,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // skip forward button
     public void skipForward() throws IOException {
+        mActivityResumed = false;
        // trackIndex = mPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
         /*mPlayer.selectTrack(trackIndex + 1);
         mPlayer.start();*/
@@ -378,6 +385,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // skip forward button
     public void skipback() throws IOException {
+        mActivityResumed = false;
         // trackIndex = mPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
         /*mPlayer.selectTrack(trackIndex + 1);
         mPlayer.start();*/

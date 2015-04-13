@@ -131,20 +131,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         switch (v.getId()) {
             case R.id.play_btn:
-
-               // bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
+                playIntent = new Intent(this, PlayerService.class);
+                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );
                 startService(playIntent);
 
                 break;
 
             case R.id.stop_btn:
-                //unbindService(this);
+                unbindService(playerConnect);
                 stopService(playIntent);
                 break;
 
             case R.id.pause_btn:
-                playerSrv.onPause();
-
+                if (playerBound) {
+                    playerSrv.onPause();
+                    Log.d(TAG, "Player is bound and is pausing");
+                }
                 break;
 
             case R.id.previous_btn:
@@ -181,8 +183,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             super.onStart();
 
             /*if (playIntent == null) {*/
-                playIntent = new Intent(this, PlayerService.class);
-                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );
+                /*playIntent = new Intent(this, PlayerService.class);
+                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );*/
                 //startService(playIntent);
             //}
             /*bindIntent = new Intent(this, PlayerService.class);
@@ -194,11 +196,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onStop() {
         super.onStop();
 
-        if (playerBound) {
+        /*if (playerBound) {
             unbindService(playerConnect);
             playerBound = false;
             Log.d(TAG, "Player was bound, unbinding.");
-        }
+        }*/
         //unbindService(playerConnect);
     }
 
