@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -41,6 +42,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     int trackIndex = 0;
     int [] songs;
     int currentPosition = 0;
+    String[] trackNames;
+    String songName;
 
     ArrayList<Integer> songIdList;
     ArrayList<String> songArrayList;
@@ -98,6 +101,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        trackNames = new String[] {"Gimme Shelter", "Brown Sugar", "Doom and Gloom"};
 
 
         // initialize Audio Position
@@ -136,8 +140,17 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             }
         }
 
+    }
 
+    // play next track
+    public void playNextTrack() throws IOException {
+        trackIndex = (trackIndex + 1) % 3;
+        AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
 
+        mPlayer.reset();
+        mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
+        mPlayer.prepareAsync();
+        aFD.close();
     }
 
     // PlayPrevious
@@ -168,7 +181,10 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "Track info: " + mPlayer.getCurrentPosition());
+        Log.d(TAG, "TrackIndex = " + trackIndex);
         Log.d(TAG, "Activity Resumed = " + mActivityResumed);
+        songName = updateTitle();
+        Log.d(TAG, songName);
        // start mPlayer
        /* if (mActivityResumed) {
             mp.seekTo(currentPosition);
@@ -182,6 +198,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // Binder toast
     public void showToast() {
         Toast.makeText(this, "Text goes here", Toast.LENGTH_SHORT).show();
+
     }
 
 
@@ -196,6 +213,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "Player Started", Toast.LENGTH_SHORT).show();
+        updateTitle();
             //mPlayer.start();
             // Notification implementation
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -300,18 +318,34 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // skip forward button
     public void skipForward() throws IOException {
         mActivityResumed = false;
-        playTrack();
+        playNextTrack();
     }
 
     // skip forward button
-    public void skipback() throws IOException {
+    public void skipBack() throws IOException {
         mActivityResumed = false;
         playPreviousTrack();
     }
 
     // Update Track Title
-    public void updateTitle(String currentSongTitle){
+    public String updateTitle(){
+        String trackTitle = "";
+        if (trackIndex == 0) {
+            trackTitle = trackNames[0];
+        } else if (trackIndex == 1) {
+            trackTitle = trackNames[1];
+        } else if (trackIndex == 2) {
+            trackTitle = trackNames[2];
+        }
+        /*String trackTitle = trackNames[trackIndx];
+        Log.d(TAG, "Track Title (PS)  = " + trackTitle);*/
 
+        return trackTitle;
+
+    }
+
+    public int getSongTitle() {
+        return trackIndex;
     }
 
     // stop track and service

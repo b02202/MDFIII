@@ -15,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+
 import com.robertbrooks.project1.PlayerService.BoundServiceBinder;
 
 import java.io.IOException;
@@ -30,11 +32,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Button mNextButton;
     Button mPreviousButton;
 
+    // Track Title TextView
+    TextView titleText;
+
     Intent intent;
     Intent bindIntent;
     PlayerService playerSrv;
     Intent playIntent;
     private boolean playerBound = false;
+    String songName;
 
 
     @Override
@@ -47,6 +53,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mPauseButton = (Button) this.findViewById(R.id.pause_btn);
         mNextButton = (Button) this.findViewById(R.id.next_btn);
         mPreviousButton = (Button) this.findViewById(R.id.previous_btn);
+        titleText = (TextView) this.findViewById(R.id.textView);
 
         mPlayButton.setOnClickListener(this);
         mStopButton.setOnClickListener(this);
@@ -63,6 +70,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //Intent intent = new Intent(this, PlayerService.class);
        bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
         startService(playIntent);
+        Log.d(TAG, "onCreate Connect");
+        //songName = playerSrv.updateTitle();
+        /*if (!playerBound) {
+            songName = "Gimme Shelter";
+            titleText.setText(songName);
+            Log.d(TAG, songName);
+        }*/
+
 
 
     }
@@ -74,6 +89,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             playerSrv = binder.getService();
             Log.d(TAG, "ServiceConnected");
             bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
+            //titleText.setText(playerSrv.getSongTitle());
+            setTitle();
 
             playerBound = true;
         }
@@ -121,11 +138,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 try {
                     playerSrv.playTrack();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-
+                setTitle();
                 break;
 
             case R.id.stop_btn:
@@ -133,34 +151,41 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 // Stop track at current position
                 if (playerBound) {
                     playerSrv.onPause();
+
                     Log.d(TAG, "Player is bound and is pausing");
                 }
+                setTitle();
                 break;
 
             case R.id.pause_btn:
                 if (playerBound) {
                     playerSrv.onPause();
+                    setTitle();
 
                 }
                 break;
 
             case R.id.previous_btn:
                 try {
-                    playerSrv.skipback();
+                    playerSrv.skipBack();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                setTitle();
                 break;
 
             case R.id.next_btn:
                 if (playerBound) {
                     try {
                         playerSrv.skipForward();
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     Log.d(TAG, "Player is bound skipping to next song.");
                 }
+                setTitle();
                 Log.d(TAG, "Next Button Clicked");
 
                 break;
@@ -179,5 +204,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    public void  setTitle() {
+        String trackString = "";
+        int trackIndex = playerSrv.getSongTitle();
+        if (trackIndex == 0) {
+            trackString = "Gimme Shelter";
+        } else if (trackIndex ==1) {
+            trackString = "Brown Sugar";
+        } else if (trackIndex == 2) {
+            trackString = "Doom and Gloom";
+        }
+        Log.i(TAG, "Track Index (MA) = " + trackIndex);
+        titleText.setText(trackString);
+    }
 
 }
