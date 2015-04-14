@@ -1,6 +1,7 @@
+/*PlayerService.java
+* Robert Brooks*/
 package com.robertbrooks.project1;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -10,14 +11,10 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -32,21 +29,19 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public String TAG = "PLAYER SERVICE";
     public static final int STANDARD_NOTIFICATION = 0x01001;
     public static final int EXPANDED_NOTIFICATION = 0x01002;
-    private static final String SAVE_POSITION = "PlayerService.SAVE_POSITION";
     private final IBinder mBinder = new BoundServiceBinder();
     boolean mActivityResumed;
     boolean mPrepared;
-    private int mAudioPosition;
-    private static PlayerService ref = null;
-    public int index;
     int trackIndex = 0;
     int [] songs;
     int currentPosition = 0;
     String[] trackNames;
     String songName;
+    NotificationManager nManager;
+    NotificationCompat.Builder builder;
+    NotificationCompat.BigTextStyle bigTextStyle;
 
     ArrayList<Integer> songIdList;
-    ArrayList<String> songArrayList;
 
     MediaPlayer mPlayer;
 
@@ -94,22 +89,20 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public void onCreate() {
         super.onCreate();
 
-        songIdList = new ArrayList<Integer>();
+        songIdList = new ArrayList<>();
         //get raw resource id's and add to songIDList
         try {
             getRawTracks(songIdList);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        // array of track titles
         trackNames = new String[] {"Gimme Shelter", "Brown Sugar", "Doom and Gloom"};
 
 
         // initialize Audio Position
-        mAudioPosition = 0;
         trackIndex = 0;
-        //mPlayer = MediaPlayer.create(this, R.raw.gimme_shelter);
         mPlayer = new MediaPlayer();
-        //mPrepared = mActivityResumed = false;
 
         // initialize MediaPlayer
         try {
@@ -117,9 +110,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-       // mPlayer.start();
-
     }
 
     // play song
@@ -153,7 +143,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         aFD.close();
     }
 
-    // PlayPrevious
+    // Play Previous Track
     public void playPreviousTrack() throws IOException {
 
         if (trackIndex > 0 ) {
@@ -184,40 +174,21 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         Log.d(TAG, "TrackIndex = " + trackIndex);
         Log.d(TAG, "Activity Resumed = " + mActivityResumed);
         songName = updateTitle();
+        updateNot();
         Log.d(TAG, songName);
-       // start mPlayer
-       /* if (mActivityResumed) {
-            mp.seekTo(currentPosition);
-           // mp.start();
-            mActivityResumed = false;
-        }*/
-
         mp.start();
     }
-
-    // Binder toast
-    public void showToast() {
-        Toast.makeText(this, "Text goes here", Toast.LENGTH_SHORT).show();
-
-    }
-
-
-
-
-
-
-
-
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Player Started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Music Playing", Toast.LENGTH_SHORT).show();
         updateTitle();
             //mPlayer.start();
             // Notification implementation
-            NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+            nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+           // int notifyID = 1;
+            builder = new NotificationCompat.Builder(this);
 
             // Intent
             Intent nIntent = new Intent(this, MainActivity.class);
@@ -233,13 +204,17 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             builder.setSmallIcon(R.drawable.ic_av_play_arrow);
             builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
             builder.setContentTitle("Playing Music");
-            builder.setContentText("Stones Playing");
-            NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+            builder.setContentText("The Rolling Stones");
+            bigTextStyle = new NotificationCompat.BigTextStyle();
             bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
             bigTextStyle.setBigContentTitle("The Rolling Stones");
             bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
                     " and are considered the best in the business!");
             builder.setStyle(bigTextStyle);
+
+        // update bigText with current song
+        bigTextStyle.bigText(updateTitle());
+
             nManager.notify(EXPANDED_NOTIFICATION, builder.build());
             builder.setAutoCancel(false);
             builder.setOngoing(true);
@@ -249,6 +224,11 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         return START_NOT_STICKY;
     }
+    // update notification
+    public void updateNot() {
+        bigTextStyle.bigText(updateTitle());
+        nManager.notify(EXPANDED_NOTIFICATION, builder.build());
+    }
 
 
 
@@ -256,17 +236,14 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public void onDestroy() {
         super.onDestroy();
         if (mPlayer != null) {
-            //mPlayer.stop();
-            //mPlayer.stop();
-           // mAudioPosition = mPlayer.getCurrentPosition();
             mPrepared = false;
             Log.d(TAG, "mPrepared = " + mPrepared);
         }
-
         stopForeground(true);
 
-
        mPlayer.release();
+        this.stopSelf();
+
     }
 
     // pause media player and get current position
@@ -281,17 +258,14 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // Initialize player
     public void initPlayer() throws IOException {
-        // Set wake lock property
-
+        // create array of song files
         songs = new int[] {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
         mPlayer = MediaPlayer.create(this, songs[0]);
         Log.i(TAG, "Song Track = " + songs[0]);
-       // mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setOnPreparedListener(this);
         mPlayer.setOnCompletionListener(this);
         mPlayer.setOnErrorListener(this);
-        //mPlayer.start();
     }
 
     // get songs from raw folder
@@ -304,16 +278,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     }
 
-    // set Track
-    public void setTrackList() {
-        String Track1 = "android.resource://" + getPackageName() + "/raw/gimme_shelter";
-        String Track2 = "android.resource://" + getPackageName() + "/raw/brown_sugar";
-        String Track3 = "android.resource://" + getPackageName() + "/raw/doom_and_gloom";
-        songArrayList = new ArrayList<>();
-        songArrayList.add(Track1);
-        songArrayList.add(Track2);
-        songArrayList.add(Track3);
-    }
 
     // skip forward button
     public void skipForward() throws IOException {
@@ -337,8 +301,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } else if (trackIndex == 2) {
             trackTitle = trackNames[2];
         }
-        /*String trackTitle = trackNames[trackIndx];
-        Log.d(TAG, "Track Title (PS)  = " + trackTitle);*/
+
 
         return trackTitle;
 
@@ -347,13 +310,4 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public int getSongTitle() {
         return trackIndex;
     }
-
-    // stop track and service
-    public void stopTrack() {
-        mPlayer.stop();
-
-        //stopSelf();
-    }
-
-
 }
