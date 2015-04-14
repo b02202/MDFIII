@@ -57,16 +57,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         //intent = new Intent(this, PlayerService.class);
 
-        Intent bindIntent = new Intent(this, PlayerService.class);
+
         //playIntent = new Intent(this, PlayerService.class);
+        playIntent = new Intent(this, PlayerService.class);
+        //Intent intent = new Intent(this, PlayerService.class);
+       bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
+        startService(playIntent);
 
 
     }
+     // Connect to PlayerService
     ServiceConnection playerConnect = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
             playerSrv = binder.getService();
+            Log.d(TAG, "ServiceConnected");
+            bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
+
             playerBound = true;
         }
 
@@ -76,28 +84,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     };
 
-    // Connect to Player Service
-    /*private ServiceConnection playerConnect = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    }*/
-        /*@Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            PlayerService.BoundServiceBinder binder = (PlayerService.BoundServiceBinder) service;
-            playerBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            playerBound = false;
-        }*/
 
 
 
@@ -127,25 +113,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        //TODO: CHANGE TO SWITCH CASE WHEN FORWARD AND BACK BUTTONS ARE ADDED
+
 
         switch (v.getId()) {
             case R.id.play_btn:
-                playIntent = new Intent(this, PlayerService.class);
-                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );
-                startService(playIntent);
+                // play track
+
+                try {
+                    playerSrv.playTrack();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
 
                 break;
 
             case R.id.stop_btn:
-                unbindService(playerConnect);
-                stopService(playIntent);
+
+                // Stop track at current position
+                if (playerBound) {
+                    playerSrv.onPause();
+                    Log.d(TAG, "Player is bound and is pausing");
+                }
                 break;
 
             case R.id.pause_btn:
                 if (playerBound) {
                     playerSrv.onPause();
-                    Log.d(TAG, "Player is bound and is pausing");
+
                 }
                 break;
 
@@ -174,45 +169,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
-
-
-
-
-        @Override
-        protected void onStart () {
-            super.onStart();
-
-            /*if (playIntent == null) {*/
-                /*playIntent = new Intent(this, PlayerService.class);
-                bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE );*/
-                //startService(playIntent);
-            //}
-            /*bindIntent = new Intent(this, PlayerService.class);
-            bindService(bindIntent, this, Context.BIND_AUTO_CREATE);*/
-        }
-
-
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
 
-        /*if (playerBound) {
+        if (playerBound) {
             unbindService(playerConnect);
             playerBound = false;
-            Log.d(TAG, "Player was bound, unbinding.");
-        }*/
-        //unbindService(playerConnect);
+        }
     }
 
 
-
-    /*@Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-
-    }*/
 }

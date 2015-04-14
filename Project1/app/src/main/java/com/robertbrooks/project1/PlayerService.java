@@ -47,12 +47,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     MediaPlayer mPlayer;
 
-    /*public static PlayerService getInstance() {
-        if (ref == null) {
-            ref = new PlayerService();
-        }
-        return ref;
-    }*/
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -62,32 +56,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } catch (IOException e) {
             e.printStackTrace();
         }
-        /*trackIndex = mPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
-        int nextIndex = trackIndex + 1;
 
-        if (nextIndex < songIdList.size()) {
-            mPlayer.selectTrack(nextIndex);
-
-        } else {
-
-            mPlayer.stop();
-            mPlayer.release();
-        }
-*/
-        /*if (trackIndex < songIdList.size()) {
-            trackIndex ++;
-            index ++;
-        } else {
-            trackIndex = 0;
-            index = 0;
-        }
-        trackIndex = index;
-
-        try {
-            mPlayer.setDataSource(this, Uri.parse(songArrayList.get(trackIndex)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     @Override
@@ -112,8 +81,9 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // onUnbind Method
     @Override
     public boolean onUnbind(Intent intent) {
-        mPlayer.stop();
-        mPlayer.release();
+        //mPlayer.stop();
+        //mPlayer.release();
+
         return false;
     }
 
@@ -150,46 +120,23 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // play song
     public void playTrack() throws IOException {
-        trackIndex = (trackIndex + 1)% 3;
-        AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
+        if (!mPlayer.isPlaying()) {
+            if (mActivityResumed) {
+                mPlayer.seekTo(currentPosition);
+                mPlayer.start();
+                mActivityResumed = false;
+            } else {
+                trackIndex = (trackIndex + 1) % 3;
+                AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
 
-        mPlayer.reset();
-        mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
-        mPlayer.prepareAsync();
-        aFD.close();
-
-        /*Log.i(TAG, "trackIndex = " + trackIndex);
-        mPlayer.reset();
-        //setTrackList();
-        String Track1 = "android.resource://" + getPackageName() + "/raw/gimme_shelter";
-        String Track2 = "android.resource://" + getPackageName() + "/raw/brown_sugar";
-        String Track3 = "android.resource://" + getPackageName() + "/raw/doom_and_gloom";
-
-        mPlayer.setDataSource(this, Uri.parse(songArrayList.get(0)));
-        Log.d(TAG, "Track = " + songArrayList.get(trackIndex));
-        mPlayer.prepareAsync();*/
-        //int resString =
+                mPlayer.reset();
+                mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
+                mPlayer.prepareAsync();
+                aFD.close();
+            }
+        }
 
 
-        /*int index;
-        for (index = 0; index < songArrayList.size(); index++) {
-            mPlayer.setDataSource(this, Uri.parse(songArrayList.get(index)));
-
-        }*/
-        /*if (index < songArrayList.size())
-            index ++;*/
-
-        /*else {
-            index = 0;
-        }*/
-        //Log.i(TAG, "index = " + index);
-
-
-        /*try {
-            mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
-        } catch (IOException e) {
-            Log.e("PLAYER SERVICE", "Error setting data source", e);
-        }*/
 
     }
 
@@ -223,21 +170,13 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         Log.d(TAG, "Track info: " + mPlayer.getCurrentPosition());
         Log.d(TAG, "Activity Resumed = " + mActivityResumed);
        // start mPlayer
-        if (mActivityResumed) {
+       /* if (mActivityResumed) {
             mp.seekTo(currentPosition);
-            mp.start();
+           // mp.start();
             mActivityResumed = false;
-        } else {
-            mp.start();
-        }
-        //mp.start();
-
-       /* mPrepared = true;
-
-        if (mPlayer != null) {
-            mPlayer.seekTo(mAudioPosition);
-            mp.start();
         }*/
+
+        mp.start();
     }
 
     // Binder toast
@@ -256,8 +195,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-            mPlayer.start();
+        Toast.makeText(this, "Player Started", Toast.LENGTH_SHORT).show();
+            //mPlayer.start();
             // Notification implementation
             NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -300,31 +239,16 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         super.onDestroy();
         if (mPlayer != null) {
             //mPlayer.stop();
+            //mPlayer.stop();
            // mAudioPosition = mPlayer.getCurrentPosition();
             mPrepared = false;
+            Log.d(TAG, "mPrepared = " + mPrepared);
         }
 
         stopForeground(true);
 
 
        mPlayer.release();
-    }
-
-
-
-
-
-
-
-
-
-    // Start Media Player
-    public void onPlayerResume(int currentPosition) {
-
-        if (mPlayer != null) {
-            mPlayer.seekTo(currentPosition);
-            mPlayer.start();
-        }
     }
 
     // pause media player and get current position
@@ -340,8 +264,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // Initialize player
     public void initPlayer() throws IOException {
         // Set wake lock property
-        //mPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        //songs = new int[] {songIdList.get(0), songIdList.get(1), songIdList.get(2)};
+
         songs = new int[] {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
         mPlayer = MediaPlayer.create(this, songs[0]);
         Log.i(TAG, "Song Track = " + songs[0]);
@@ -377,18 +300,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // skip forward button
     public void skipForward() throws IOException {
         mActivityResumed = false;
-       // trackIndex = mPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
-        /*mPlayer.selectTrack(trackIndex + 1);
-        mPlayer.start();*/
         playTrack();
     }
 
     // skip forward button
     public void skipback() throws IOException {
         mActivityResumed = false;
-        // trackIndex = mPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
-        /*mPlayer.selectTrack(trackIndex + 1);
-        mPlayer.start();*/
         playPreviousTrack();
     }
 
@@ -396,5 +313,13 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public void updateTitle(String currentSongTitle){
 
     }
+
+    // stop track and service
+    public void stopTrack() {
+        mPlayer.stop();
+
+        //stopSelf();
+    }
+
 
 }
