@@ -13,28 +13,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
+
+import com.robertbrooks.project1.Fragments.MediaPlayerFragment;
 
 import java.io.IOException;
 
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity {
     public static String TAG = "MainActivity";
-    // Buttons
-    Button mPlayButton;
-    Button mStopButton;
-    Button mPauseButton;
-    Button mNextButton;
-    Button mPreviousButton;
 
-    // Track Title TextView
-    TextView titleText;
+    MediaPlayerFragment mediaPlayerFragment;
+
 
     PlayerService playerSrv;
     Intent playIntent;
     private boolean playerBound = false;
+
+    TextView titleText;
 
 
     @Override
@@ -42,18 +39,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mPlayButton = (Button) this.findViewById(R.id.play_btn);
-        mStopButton = (Button) this.findViewById(R.id.stop_btn);
-        mPauseButton = (Button) this.findViewById(R.id.pause_btn);
-        mNextButton = (Button) this.findViewById(R.id.next_btn);
-        mPreviousButton = (Button) this.findViewById(R.id.previous_btn);
-        titleText = (TextView) this.findViewById(R.id.textView);
+        if (savedInstanceState == null) {
+            mediaPlayerFragment = MediaPlayerFragment.newInstance();
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.mediaFragContainer, mediaPlayerFragment, MediaPlayerFragment.TAG)
+                    .commit();
+        }
 
-        mPlayButton.setOnClickListener(this);
-        mStopButton.setOnClickListener(this);
-        mPauseButton.setOnClickListener(this);
-        mNextButton.setOnClickListener(this);
-        mPreviousButton.setOnClickListener(this);
 
         // bind to and start PlayerService
         playIntent = new Intent(this, PlayerService.class);
@@ -72,7 +64,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Log.d(TAG, "ServiceConnected");
             bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
             // set song title
-            setTitle();
+            //setTitle();
 
             playerBound = true;
         }
@@ -82,10 +74,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             playerBound = false;
         }
     };
-
-
-
-
 
 
     @Override
@@ -110,74 +98,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onClick(View v) {
 
-
-        switch (v.getId()) {
-            case R.id.play_btn:
-                // play track
-                try {
-                    playerSrv.playTrack();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // update title
-                setTitle();
-                break;
-
-            case R.id.stop_btn:
-
-                // Stop track at current position
-                if (playerBound) {
-                    playerSrv.onPause();
-
-                    Log.d(TAG, "Player is bound and is pausing");
-                }
-                // update title
-                setTitle();
-                break;
-
-            case R.id.pause_btn:
-                if (playerBound) {
-                    playerSrv.onPause();
-                    // update title
-                    setTitle();
-
-                }
-                break;
-
-            case R.id.previous_btn:
-                try {
-                    playerSrv.skipBack();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // update title
-                setTitle();
-                break;
-
-            case R.id.next_btn:
-                if (playerBound) {
-                    try {
-                        playerSrv.skipForward();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Log.d(TAG, "Player is bound skipping to next song.");
-                }
-                // update title
-                setTitle();
-                Log.d(TAG, "Next Button Clicked");
-
-                break;
-        }
-
-
-    }
 
     @Override
     protected void onDestroy() {
@@ -190,19 +111,47 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
     }
-     // set track title
-    public void  setTitle() {
+
+    // Media Play
+    public void playTrack(View view) throws IOException {
+        playerSrv.playTrack();
+        setTitle();
+    }
+
+    public void stopTrack(View view) {
+        playerSrv.stopPlayer();
+    }
+
+    public void pauseTrack(View view) {
+        playerSrv.onPause();
+    }
+
+    public void playPrevious(View view) throws IOException {
+        playerSrv.playPreviousTrack();
+        setTitle();
+    }
+
+    public void playNext(View view) throws IOException {
+        playerSrv.playNextTrack();
+        setTitle();
+    }
+
+    // set track title
+    public void setTitle() {
+        titleText = (TextView) findViewById(R.id.textView);
         String trackString = "";
         int trackIndex = playerSrv.getSongTitle();
         if (trackIndex == 0) {
             trackString = "Gimme Shelter";
-        } else if (trackIndex ==1) {
+        } else if (trackIndex == 1) {
             trackString = "Brown Sugar";
         } else if (trackIndex == 2) {
             trackString = "Doom and Gloom";
         }
         Log.i(TAG, "Track Index (MA) = " + trackIndex);
+        //titleText.setText(trackString);
         titleText.setText(trackString);
     }
+
 
 }

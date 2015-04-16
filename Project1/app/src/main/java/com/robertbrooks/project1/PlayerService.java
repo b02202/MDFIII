@@ -7,10 +7,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -33,18 +33,14 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     boolean mActivityResumed;
     boolean mPrepared;
     int trackIndex = 0;
-    int [] songs;
     int currentPosition = 0;
     String[] trackNames;
     String songName;
     NotificationManager nManager;
     NotificationCompat.Builder builder;
     NotificationCompat.BigTextStyle bigTextStyle;
-
     ArrayList<Integer> songIdList;
-
     MediaPlayer mPlayer;
-
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -61,7 +57,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
     }
-
 
     // create binder
     public class BoundServiceBinder extends Binder {
@@ -99,7 +94,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         // array of track titles
         trackNames = new String[] {"Gimme Shelter", "Brown Sugar", "Doom and Gloom"};
 
-
         // initialize Audio Position
         trackIndex = 0;
         mPlayer = new MediaPlayer();
@@ -115,55 +109,57 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // play song
     public void playTrack() throws IOException {
         if (!mPlayer.isPlaying()) {
-            if (mActivityResumed) {
+            if (!mActivityResumed) {
+                mPlayer.prepareAsync();
+                createNot();
+            } else if (mActivityResumed) {
                 mPlayer.seekTo(currentPosition);
                 mPlayer.start();
                 mActivityResumed = false;
-            } else {
+            }
+            else {
                 trackIndex = (trackIndex + 1) % 3;
-                AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
+                if (trackIndex == 0) {
+                    mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
+
+                } else if (trackIndex == 1) {
+                    mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/brown_sugar"));
+
+                } else if (trackIndex == 2) {
+                    mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/doom_and_gloom"));
+                }
 
                 mPlayer.reset();
-                mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
+
                 mPlayer.prepareAsync();
-                aFD.close();
             }
         }
+        Toast.makeText(this, "Music Playing", Toast.LENGTH_SHORT).show();
 
     }
 
     // play next track
     public void playNextTrack() throws IOException {
         trackIndex = (trackIndex + 1) % 3;
-        AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
-
-        mPlayer.reset();
-        mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
+       // select and play track
+        selectTrack(trackIndex);
         mPlayer.prepareAsync();
-        aFD.close();
     }
+
+
 
     // Play Previous Track
     public void playPreviousTrack() throws IOException {
 
         if (trackIndex > 0 ) {
             trackIndex = (trackIndex - 1) % 3;
-            AssetFileDescriptor aFD = this.getResources().openRawResourceFd(songs[trackIndex]);
-
-            mPlayer.reset();
-            mPlayer.setDataSource(aFD.getFileDescriptor(), aFD.getStartOffset(), aFD.getDeclaredLength());
+            selectTrack(trackIndex);
             mPlayer.prepareAsync();
-            aFD.close();
 
         } else if (trackIndex == 0){
             trackIndex = 2;
-            AssetFileDescriptor assetFileDescriptor = this.getResources().openRawResourceFd(songs[trackIndex]);
-
-            mPlayer.reset();
-            mPlayer.setDataSource(assetFileDescriptor.getFileDescriptor(),
-                    assetFileDescriptor.getStartOffset(), assetFileDescriptor.getDeclaredLength());
+            selectTrack(trackIndex);
             mPlayer.prepareAsync();
-            assetFileDescriptor.close();
         }
 
     }
@@ -173,6 +169,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         Log.d(TAG, "Track info: " + mPlayer.getCurrentPosition());
         Log.d(TAG, "TrackIndex = " + trackIndex);
         Log.d(TAG, "Activity Resumed = " + mActivityResumed);
+
         songName = updateTitle();
         updateNot();
         Log.d(TAG, songName);
@@ -182,55 +179,58 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Music Playing", Toast.LENGTH_SHORT).show();
-        updateTitle();
-            //mPlayer.start();
-            // Notification implementation
-            nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-           // int notifyID = 1;
-            builder = new NotificationCompat.Builder(this);
 
-            // Intent
-            Intent nIntent = new Intent(this, MainActivity.class);
+        //updateTitle();
+       // }
 
-            // Pending Intent
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, STANDARD_NOTIFICATION, nIntent, 0);
-            // Create default action intent
-            // Set the default action
+        return START_NOT_STICKY;
+    }
 
-            // Set ContentIntent
-            builder.setContentIntent(pendingIntent);
+    // create notification
+    public void createNot(){
+        //updateTitle();
+        //mPlayer.start();
+        // Notification implementation
+        nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // int notifyID = 1;
+        builder = new NotificationCompat.Builder(this);
 
-            builder.setSmallIcon(R.drawable.ic_av_play_arrow);
-            builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
-            builder.setContentTitle("Playing Music");
-            builder.setContentText("The Rolling Stones");
-            bigTextStyle = new NotificationCompat.BigTextStyle();
-            bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
-            bigTextStyle.setBigContentTitle("The Rolling Stones");
-            bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
-                    " and are considered the best in the business!");
-            builder.setStyle(bigTextStyle);
+        // Intent
+        Intent nIntent = new Intent(this, MainActivity.class);
+
+        // Pending Intent
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, STANDARD_NOTIFICATION, nIntent, 0);
+        // Create default action intent
+        // Set the default action
+
+        // Set ContentIntent
+        builder.setContentIntent(pendingIntent);
+
+        builder.setSmallIcon(R.drawable.ic_av_play_arrow);
+        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
+        builder.setContentTitle("Playing Music");
+        builder.setContentText("The Rolling Stones");
+        bigTextStyle = new NotificationCompat.BigTextStyle();
+        bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
+        bigTextStyle.setBigContentTitle("The Rolling Stones");
+        bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
+                " and are considered the best in the business!");
+        builder.setStyle(bigTextStyle);
 
         // update bigText with current song
         bigTextStyle.bigText(updateTitle());
 
-            nManager.notify(EXPANDED_NOTIFICATION, builder.build());
-            builder.setAutoCancel(false);
-            builder.setOngoing(true);
+        nManager.notify(EXPANDED_NOTIFICATION, builder.build());
+        builder.setAutoCancel(false);
+        builder.setOngoing(true);
 
-            startForeground(EXPANDED_NOTIFICATION, builder.build());
-       // }
-
-        return START_NOT_STICKY;
+        startForeground(EXPANDED_NOTIFICATION, builder.build());
     }
     // update notification
     public void updateNot() {
         bigTextStyle.bigText(updateTitle());
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
     }
-
-
 
     @Override
     public void onDestroy() {
@@ -256,22 +256,27 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         }
     }
 
+    // stop media player
+    public void stopPlayer() {
+        mPlayer.stop();
+        mActivityResumed = false;
+        //mPlayer.prepareAsync();
+    }
+
     // Initialize player
     public void initPlayer() throws IOException {
-        // create array of song files
-        songs = new int[] {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
-        mPlayer = MediaPlayer.create(this, songs[0]);
-        Log.i(TAG, "Song Track = " + songs[0]);
+
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setOnPreparedListener(this);
         mPlayer.setOnCompletionListener(this);
         mPlayer.setOnErrorListener(this);
+        mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
     }
 
     // get songs from raw folder
     public void getRawTracks(ArrayList<Integer> trackArray) throws IllegalAccessException {
-        Field[] fields = R.raw.class.getFields();
-        for (Field field : fields) {
+        Field[] rawFields = R.raw.class.getFields();
+        for (Field field : rawFields) {
             int resID = field.getInt(field);
             trackArray.add(resID);
         }
@@ -279,17 +284,23 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     }
 
 
-    // skip forward button
-    public void skipForward() throws IOException {
-        mActivityResumed = false;
-        playNextTrack();
+    // Select track to be played
+
+    public void selectTrack(int trackIndx) throws IOException {
+        if (trackIndx == 0) {
+            mPlayer.reset();
+            mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
+
+        } else if (trackIndx == 1) {
+            mPlayer.reset();
+            mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/brown_sugar"));
+
+        } else if (trackIndx == 2) {
+            mPlayer.reset();
+            mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/doom_and_gloom"));
+        }
     }
 
-    // skip forward button
-    public void skipBack() throws IOException {
-        mActivityResumed = false;
-        playPreviousTrack();
-    }
 
     // Update Track Title
     public String updateTitle(){
@@ -301,12 +312,10 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } else if (trackIndex == 2) {
             trackTitle = trackNames[2];
         }
-
-
         return trackTitle;
-
     }
 
+    // return trackIndex to use in MainActivity
     public int getSongTitle() {
         return trackIndex;
     }
