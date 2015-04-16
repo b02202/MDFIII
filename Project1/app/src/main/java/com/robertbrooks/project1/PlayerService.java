@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -42,6 +43,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     NotificationCompat.BigPictureStyle bigTextStyle;
     ArrayList<Integer> songIdList;
     MediaPlayer mPlayer;
+    Bitmap bigPicture;
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -199,9 +201,9 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         Log.d(TAG, "TrackIndex = " + trackIndex);
         Log.d(TAG, "Activity Resumed = " + mActivityResumed);
 
-        songName = updateTitle();
+        //songName = updateTitle();
         updateNot();
-        Log.d(TAG, songName);
+        //Log.d(TAG, songName);
         mp.start();
     }
 
@@ -241,8 +243,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         builder.setContentText("The Rolling Stones");
 
 
-        //bigTextStyle = new NotificationCompat.BigPictureStyle(getDrawable(), R.drawable.rolling_stones_logo);
-
+        bigTextStyle = new NotificationCompat.BigPictureStyle();
+        bigTextStyle.bigPicture(BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_logo));
         //bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
         bigTextStyle.setBigContentTitle("The Rolling Stones");
 
@@ -252,6 +254,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         // update bigText with current song
         //bigTextStyle.bigText(updateTitle());
+        // update picture
+        bigTextStyle.bigPicture(updateTitle());
 
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
         builder.setAutoCancel(false);
@@ -261,7 +265,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     }
     // update notification
     public void updateNot() {
-        //bigTextStyle.bigText(updateTitle());
+        bigTextStyle.bigPicture(updateTitle());
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
     }
 
@@ -339,17 +343,23 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
 
     // Update Track Title
-    public String updateTitle(){
+    public Bitmap updateTitle(){
         String trackTitle = "";
         if (trackIndex == 0) {
+            bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_logo);
             trackTitle = trackNames[0];
         } else if (trackIndex == 1) {
+            bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_two);
             trackTitle = trackNames[1];
         } else if (trackIndex == 2) {
+            bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_three);
             trackTitle = trackNames[2];
         }
-        return trackTitle;
+        return bigPicture;
     }
+
+
+
 
     // return trackIndex to use in MainActivity
     public int getSongTitle() {
