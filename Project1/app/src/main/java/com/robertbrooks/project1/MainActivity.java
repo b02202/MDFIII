@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 
 import com.robertbrooks.project1.Fragments.MediaPlayerFragment;
@@ -151,6 +152,18 @@ public class MainActivity extends Activity {
         Log.i(TAG, "Track Index (MA) = " + trackIndex);
         //titleText.setText(trackString);
         titleText.setText(trackString);
+    }
+
+    // toggle button implementation
+    public void toggleClick(View v) {
+        // check to see if toggle is on
+        boolean on = ((ToggleButton) v).isChecked();
+
+        if (on) {
+            playerSrv.loopFunction();
+        } else {
+            playerSrv.notLooping();
+        }
     }
 
 

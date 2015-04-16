@@ -34,21 +34,41 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     boolean mPrepared;
     int trackIndex = 0;
     int currentPosition = 0;
+    boolean trackLooping;
     String[] trackNames;
     String songName;
     NotificationManager nManager;
     NotificationCompat.Builder builder;
-    NotificationCompat.BigTextStyle bigTextStyle;
+    NotificationCompat.BigPictureStyle bigTextStyle;
     ArrayList<Integer> songIdList;
     MediaPlayer mPlayer;
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        mActivityResumed = false;
+        /*// replay current track if looping
+        if (!trackLooping) {
+            try {
+                playTrack();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }*/
 
-        try {
-            playTrack();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (trackLooping) {
+            try {
+                selectTrack(trackIndex);
+                mPlayer.prepareAsync();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+
+            try {
+                playTrack();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -140,7 +160,10 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // play next track
     public void playNextTrack() throws IOException {
-        if (mPlayer.isPlaying() && !mActivityResumed) {
+        if (trackLooping && mPlayer.isPlaying() && !mActivityResumed) {
+            selectTrack(trackIndex);
+            mPlayer.prepareAsync();
+        } else if (mPlayer.isPlaying() && !mActivityResumed && !trackLooping) {
             trackIndex = (trackIndex + 1) % 3;
             // select and play track
             selectTrack(trackIndex);
@@ -153,7 +176,11 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // Play Previous Track
     public void playPreviousTrack() throws IOException {
 
-        if (trackIndex > 0 && mPlayer.isPlaying() && !mActivityResumed ) {
+        if (mPlayer.isPlaying() && !mActivityResumed && trackLooping) {
+            selectTrack(trackIndex);
+            mPlayer.prepareAsync();
+
+        } else if (trackIndex > 0 && mPlayer.isPlaying() && !mActivityResumed && !trackLooping ) {
             trackIndex = (trackIndex - 1) % 3;
             selectTrack(trackIndex);
             mPlayer.prepareAsync();
@@ -212,15 +239,19 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_av_play_arrow));
         builder.setContentTitle("Playing Music");
         builder.setContentText("The Rolling Stones");
-        bigTextStyle = new NotificationCompat.BigTextStyle();
-        bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
+
+
+        //bigTextStyle = new NotificationCompat.BigPictureStyle(getDrawable(), R.drawable.rolling_stones_logo);
+
+        //bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
         bigTextStyle.setBigContentTitle("The Rolling Stones");
-        bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
-                " and are considered the best in the business!");
+
+        /*bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
+                " and are considered the best in the business!");*/
         builder.setStyle(bigTextStyle);
 
         // update bigText with current song
-        bigTextStyle.bigText(updateTitle());
+        //bigTextStyle.bigText(updateTitle());
 
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
         builder.setAutoCancel(false);
@@ -230,7 +261,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     }
     // update notification
     public void updateNot() {
-        bigTextStyle.bigText(updateTitle());
+        //bigTextStyle.bigText(updateTitle());
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
     }
 
@@ -324,4 +355,18 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public int getSongTitle() {
         return trackIndex;
     }
+
+    // set Looping
+    public void loopFunction() {
+        mPlayer.setLooping(true);
+        trackLooping = true;
+    }
+    // set no looping
+    public void notLooping() {
+        mPlayer.setLooping(false);
+        trackLooping = false;
+    }
+
+
+
 }
