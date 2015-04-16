@@ -3,7 +3,6 @@ package com.robertbrooks.project1.Fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 import com.robertbrooks.project1.PlayerService;
 import com.robertbrooks.project1.R;
 
-import java.io.IOException;
 
 /**
  * Created by Bob on 4/14/2015.

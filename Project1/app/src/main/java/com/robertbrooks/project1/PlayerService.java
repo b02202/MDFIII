@@ -140,10 +140,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // play next track
     public void playNextTrack() throws IOException {
-        trackIndex = (trackIndex + 1) % 3;
-       // select and play track
-        selectTrack(trackIndex);
-        mPlayer.prepareAsync();
+        if (mPlayer.isPlaying() && !mActivityResumed) {
+            trackIndex = (trackIndex + 1) % 3;
+            // select and play track
+            selectTrack(trackIndex);
+            mPlayer.prepareAsync();
+        }
     }
 
 
@@ -151,12 +153,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     // Play Previous Track
     public void playPreviousTrack() throws IOException {
 
-        if (trackIndex > 0 ) {
+        if (trackIndex > 0 && mPlayer.isPlaying() && !mActivityResumed ) {
             trackIndex = (trackIndex - 1) % 3;
             selectTrack(trackIndex);
             mPlayer.prepareAsync();
 
-        } else if (trackIndex == 0){
+        } else if (trackIndex == 0 && mPlayer.isPlaying() && !mActivityResumed){
             trackIndex = 2;
             selectTrack(trackIndex);
             mPlayer.prepareAsync();
@@ -258,9 +260,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // stop media player
     public void stopPlayer() {
-        mPlayer.stop();
-        mActivityResumed = false;
-        //mPlayer.prepareAsync();
+        if(mPlayer.isPlaying()) {
+            mPlayer.stop();
+            mActivityResumed = false;
+            stopForeground(true);
+            //mPlayer.prepareAsync();
+        }
     }
 
     // Initialize player
