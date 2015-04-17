@@ -21,6 +21,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  * Created by Bob on 4/6/2015.
@@ -48,15 +50,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public void onCompletion(MediaPlayer mp) {
         mActivityResumed = false;
-        /*// replay current track if looping
-        if (!trackLooping) {
-            try {
-                playTrack();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-
         if (trackLooping) {
             try {
                 selectTrack(trackIndex);
@@ -246,17 +239,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         bigTextStyle = new NotificationCompat.BigPictureStyle();
         bigTextStyle.bigPicture(BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_logo));
-        //bigTextStyle.bigText("The Rolling Stones are the greatest Rock n' Roll band in the world!");
         bigTextStyle.setBigContentTitle("The Rolling Stones");
 
-        /*bigTextStyle.setSummaryText("The Rolling Stones are the greatest Rock n' Roll band in the world! The band formed in 1962" +
-                " and are considered the best in the business!");*/
         builder.setStyle(bigTextStyle);
 
-        // update bigText with current song
-        //bigTextStyle.bigText(updateTitle());
-        // update picture
-        bigTextStyle.bigPicture(updateTitle());
+        // update bigTextStyle with current image
+        bigTextStyle.bigPicture(updateImage());
 
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
         builder.setAutoCancel(false);
@@ -266,7 +254,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     }
     // update notification
     public void updateNot() {
-        bigTextStyle.bigPicture(updateTitle());
+        bigTextStyle.bigPicture(updateImage());
         nManager.notify(EXPANDED_NOTIFICATION, builder.build());
     }
 
@@ -316,12 +304,12 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
     // get songs from raw folder
     public void getRawTracks(ArrayList<Integer> trackArray) throws IllegalAccessException {
-        Field[] rawFields = R.raw.class.getFields();
-        for (Field field : rawFields) {
-            int resID = field.getInt(field);
-            trackArray.add(resID);
-        }
+        int rawFiles[] = {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
+        for (int i = 0; i < rawFiles.length; i++) {
+            int track = rawFiles[i];
+            trackArray.add(track);
 
+        }
     }
 
 
@@ -344,7 +332,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
 
     // Update Track Title
-    public Bitmap updateTitle(){
+    public Bitmap updateImage(){
         String trackTitle = "";
         if (trackIndex == 0) {
             bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_logo);
