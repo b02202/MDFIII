@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 
+import com.robertbrooks.project1.Fragments.MediaLandscapeFrag;
 import com.robertbrooks.project1.Fragments.MediaPlayerFragment;
 
 import java.io.IOException;
@@ -26,11 +28,14 @@ public class MainActivity extends Activity {
     public static String TAG = "MainActivity";
 
     MediaPlayerFragment mediaPlayerFragment;
+    MediaLandscapeFrag mediaLandscapeFrag;
 
 
     PlayerService playerSrv;
     Intent playIntent;
     private boolean playerBound = false;
+    private boolean landscape;
+    private boolean mPaused;
 
     TextView titleText;
 
@@ -39,24 +44,32 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (savedInstanceState == null) {
-            mediaPlayerFragment = MediaPlayerFragment.newInstance();
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.mediaFragContainer, mediaPlayerFragment, MediaPlayerFragment.TAG)
-                    .commit();
+        if (savedInstanceState == null && landscape ) {
+            setLand();
+        } else {
+            setPortrait();
         }
-
 
         // bind to and start PlayerService
         playIntent = new Intent(this, PlayerService.class);
         bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
         startService(playIntent);
-
-
-
     }
-     // Connect to PlayerService
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // check orientation
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setLand();
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setPortrait();
+        }
+    }
+
+    // Connect to PlayerService
     ServiceConnection playerConnect = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -105,12 +118,18 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         // unbind service
-        if (playerBound) {
+        if (playerBound && !mPaused) {
             unbindService(playerConnect);
             stopService(playIntent);
             playerBound = false;
         }
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mPaused = true;
     }
 
     // Media Play
@@ -165,6 +184,25 @@ public class MainActivity extends Activity {
             playerSrv.notLooping();
         }
     }
+
+
+
+    // set portrait frag
+    public void setPortrait() {
+        mediaPlayerFragment = MediaPlayerFragment.newInstance();
+        getFragmentManager().beginTransaction()
+                .replace(R.id.mediaFragContainer, mediaPlayerFragment, MediaPlayerFragment.TAG)
+                .commit();
+    }
+
+    public void setLand() {
+        mediaLandscapeFrag = MediaLandscapeFrag.newInstance();
+        getFragmentManager().beginTransaction()
+                .replace(R.id.mediaFragContainer, mediaLandscapeFrag, MediaLandscapeFrag.TAG)
+                .commit();
+    }
+
+
 
 
 }

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/rolling_stones_logo"
+            android:contentDescription="Image" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+
+
+
+
+
+        <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView"
+            android:layout_marginTop="40dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50dp">
+
+            <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/previous_btn"
+                android:background="@drawable/ic_av_skip_previous"
+                android:onClick="playPrevious"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/play_btn"
+                android:background="@drawable/ic_av_play_arrow"
+                android:onClick="playTrack"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/stop_btn"
+                android:background="@drawable/ic_av_stop"
+                android:onClick="stopTrack"
+                style="?android:attr/borderlessButtonStyle"/>
+
+
+
+            <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/pause_btn"
+                android:background="@drawable/ic_av_pause"
+                android:onClick="pauseTrack"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/next_btn"
+                android:background="@drawable/ic_av_skip_next"
+                android:onClick="playNext"
+                style="?android:attr/borderlessButtonStyle"/>
+
+        </LinearLayout>
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Looping"
+            android:id="@+id/toggleButton"
+            android:layout_gravity="center_horizontal"
+            android:onClick="toggleClick"
+            android:layout_marginTop="30dp"/>
+
+    </LinearLayout>
+
+
+
+
+
+
+
+
+
+</LinearLayout>

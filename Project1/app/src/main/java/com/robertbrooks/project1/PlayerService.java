@@ -98,6 +98,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     public boolean onUnbind(Intent intent) {
         //mPlayer.stop();
         //mPlayer.release();
+        this.stopSelf();
 
         return false;
     }
@@ -376,6 +377,22 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         mPlayer.setLooping(false);
         trackLooping = false;
     }
+
+    // get current track position
+    public int getPostition() {
+        return mPlayer.getCurrentPosition();
+
+    }
+
+    // play on orientatin change
+    public void keepPlaying(int position) {
+        mActivityResumed = true;
+        mPlayer.seekTo(position);
+        mPlayer.start();
+        mActivityResumed = false;
+
+    }
+
 
 
 

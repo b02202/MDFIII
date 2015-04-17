@@ -9,16 +9,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.robertbrooks.project1.PlayerService;
 import com.robertbrooks.project1.R;
 
-
 /**
- * Created by Bob on 4/14/2015.
+ * Created by Bob on 4/17/2015.
  */
-public class MediaPlayerFragment extends Fragment {
-
-    PlayerService playerSrv;
+public class MediaLandscapeFrag extends Fragment {
 
     // Buttons
     Button mPlayButton;
@@ -30,10 +26,10 @@ public class MediaPlayerFragment extends Fragment {
     // Track Title TextView
     TextView titleText;
 
-    public static final String TAG = "MediaPlayerFragment.TAG";
+    public static final String TAG = "MediaLandscapeFrag.TAG";
 
-    public static MediaPlayerFragment newInstance() {
-        MediaPlayerFragment frag = new MediaPlayerFragment();
+    public static MediaLandscapeFrag newInstance() {
+        MediaLandscapeFrag frag = new MediaLandscapeFrag();
         return frag;
     }
 
@@ -48,7 +44,7 @@ public class MediaPlayerFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.media_player_frag, container, false);
+        View view = inflater.inflate(R.layout.media_land_frag, container, false);
         return view;
     }
 
@@ -66,8 +62,4 @@ public class MediaPlayerFragment extends Fragment {
 
 
     }
-
-
-
 }
-
