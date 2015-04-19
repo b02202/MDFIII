@@ -1,5 +1,8 @@
+/*MediaPlayerFragment
+* Robert Brooks*/
 package com.robertbrooks.project1.Fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,6 +15,8 @@ import android.widget.TextView;
 import com.robertbrooks.project1.PlayerService;
 import com.robertbrooks.project1.R;
 
+import java.util.EventListener;
+
 
 /**
  * Created by Bob on 4/14/2015.
@@ -19,6 +24,8 @@ import com.robertbrooks.project1.R;
 public class MediaPlayerFragment extends Fragment {
 
     PlayerService playerSrv;
+
+
 
     // Buttons
     Button mPlayButton;
@@ -36,6 +43,18 @@ public class MediaPlayerFragment extends Fragment {
         MediaPlayerFragment frag = new MediaPlayerFragment();
         return frag;
     }
+
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+
+   }
+
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -1,3 +1,5 @@
+/*MediaLandscapeFrag.java
+* Robert Brooks*/
 package com.robertbrooks.project1.Fragments;
 
 import android.app.Fragment;

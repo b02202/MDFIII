@@ -14,21 +14,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 
 import com.robertbrooks.project1.Fragments.MediaLandscapeFrag;
 import com.robertbrooks.project1.Fragments.MediaPlayerFragment;
+import com.robertbrooks.project1.Fragments.SeekBarFragment;
 
 import java.io.IOException;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity  {
     public static String TAG = "MainActivity";
 
     MediaPlayerFragment mediaPlayerFragment;
     MediaLandscapeFrag mediaLandscapeFrag;
+    SeekBarFragment seekBarFragment;
+    //Context context;
 
 
     PlayerService playerSrv;
@@ -36,21 +40,45 @@ public class MainActivity extends Activity {
     private boolean playerBound = false;
     private boolean landscape;
     private boolean mPaused;
-
+    Configuration config;
+    Intent fromPlayerSrv;
+    boolean playBack = false;
     TextView titleText;
+    ToggleButton loopingToggle;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // intent from Player Service
+        fromPlayerSrv = new Intent(this, PlayerService.class);
+
+        setLandBool();
         if (savedInstanceState == null && landscape ) {
             setLand();
         } else {
             setPortrait();
         }
 
-        // bind to and start PlayerService
+
+        seekBarFragment = SeekBarFragment.newInstance();
+        getFragmentManager().beginTransaction()
+                .replace(R.id.seekBarContainer, seekBarFragment, SeekBarFragment.TAG)
+                .commit();
+
+        bindToService();
+
+        loopingToggle = (ToggleButton) findViewById(R.id.toggleButton);
+
+
+
+    }
+
+
+    public void bindToService() {
         playIntent = new Intent(this, PlayerService.class);
         bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
         startService(playIntent);
@@ -60,12 +88,19 @@ public class MainActivity extends Activity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
+
+
+
         // check orientation
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setLand();
+            /*setHandler();*/
+
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             setPortrait();
+            /*setHandler();*/
+
         }
     }
 
@@ -77,8 +112,6 @@ public class MainActivity extends Activity {
             playerSrv = binder.getService();
             Log.d(TAG, "ServiceConnected");
             bindService(playIntent, playerConnect, Context.BIND_AUTO_CREATE);
-            // set song title
-            //setTitle();
 
             playerBound = true;
         }
@@ -112,8 +145,6 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -130,30 +161,67 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         mPaused = true;
+        playBack = false;
     }
+
+    android.os.Handler handler = new android.os.Handler();
+    public void setHandler() {
+        handler.removeCallbacks(run);
+
+        // set update interval - 1 second
+        handler.postDelayed(run, 1000);
+
+        Log.d("TAG", "Handler M started");
+    }
+
+    // Runnable to poll media position from PlayerService
+
+    private Runnable run = new Runnable() {
+        @Override
+        public void run() {
+
+            int forLog = playerSrv.getPositition();
+            int trackLength = playerSrv.getDur();
+                Log.i(TAG, "Test + " + forLog);
+            // update seek bar
+            updateSeekBar(forLog, trackLength);
+
+                // every 1 second
+                handler.postDelayed(this, 1000);
+        }
+    };
 
     // Media Play
     public void playTrack(View view) throws IOException {
         playerSrv.playTrack();
+        playBack = true;
+        if (playBack) {
+            setHandler();
+        }
         setTitle();
     }
 
     public void stopTrack(View view) {
         playerSrv.stopPlayer();
+        playBack = false;
+        handler.removeCallbacks(run);
     }
 
     public void pauseTrack(View view) {
         playerSrv.onPause();
+
     }
 
     public void playPrevious(View view) throws IOException {
         playerSrv.playPreviousTrack();
         setTitle();
+
     }
 
     public void playNext(View view) throws IOException {
         playerSrv.playNextTrack();
         setTitle();
+
     }
 
     // set track title
@@ -169,7 +237,6 @@ public class MainActivity extends Activity {
             trackString = "Doom and Gloom";
         }
         Log.i(TAG, "Track Index (MA) = " + trackIndex);
-        //titleText.setText(trackString);
         titleText.setText(trackString);
     }
 
@@ -193,6 +260,10 @@ public class MainActivity extends Activity {
         getFragmentManager().beginTransaction()
                 .replace(R.id.mediaFragContainer, mediaPlayerFragment, MediaPlayerFragment.TAG)
                 .commit();
+
+
+
+
     }
 
     public void setLand() {
@@ -200,9 +271,25 @@ public class MainActivity extends Activity {
         getFragmentManager().beginTransaction()
                 .replace(R.id.mediaFragContainer, mediaLandscapeFrag, MediaLandscapeFrag.TAG)
                 .commit();
+
+    }
+
+    // set landscape boolean
+    public void setLandBool(){
+        config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            landscape = false;
+        } else {
+            landscape = true;
+        }
     }
 
 
-
+    // update seek bar
+    public void updateSeekBar(int trackPos, int trackLength) {
+        SeekBar seekBar1 =  (SeekBar) findViewById(R.id.seek_bar);
+        seekBar1.setProgress(trackPos);
+        seekBar1.setMax(trackLength);
+    }
 
 }

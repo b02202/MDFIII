@@ -17,12 +17,8 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
-
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 /**
  * Created by Bob on 4/6/2015.
@@ -39,17 +35,22 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     int currentPosition = 0;
     boolean trackLooping;
     String[] trackNames;
-    String songName;
     NotificationManager nManager;
     NotificationCompat.Builder builder;
     NotificationCompat.BigPictureStyle bigTextStyle;
     ArrayList<Integer> songIdList;
     MediaPlayer mPlayer;
     Bitmap bigPicture;
+    private final android.os.Handler handler = new android.os.Handler();
+    boolean songEnd;
+
+
+
+
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        mActivityResumed = false;
+
         if (trackLooping) {
             try {
                 selectTrack(trackIndex);
@@ -57,10 +58,10 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
+        } else  {
 
             try {
-                playTrack();
+                playNextTrack();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -73,9 +74,11 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         return false;
     }
 
+
+
     // create binder
     public class BoundServiceBinder extends Binder {
-         PlayerService getService() {
+         public PlayerService getService() {
             // return instance of Player Service
             return PlayerService.this;
         }
@@ -84,6 +87,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
+
     }
 
     // onUnbind Method
@@ -120,7 +124,10 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
+
+
 
     // play song
     public void playTrack() throws IOException {
@@ -133,7 +140,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
                 mPlayer.start();
                 mActivityResumed = false;
             }
-            else {
+            else  {
                 trackIndex = (trackIndex + 1) % 3;
                 if (trackIndex == 0) {
                     mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
@@ -148,6 +155,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
                 mPlayer.reset();
 
                 mPlayer.prepareAsync();
+
             }
         }
         Toast.makeText(this, "Music Playing", Toast.LENGTH_SHORT).show();
@@ -167,8 +175,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         }
     }
 
-
-
     // Play Previous Track
     public void playPreviousTrack() throws IOException {
 
@@ -187,6 +193,8 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
             mPlayer.prepareAsync();
         }
 
+        // start handler
+
     }
 
     @Override
@@ -197,27 +205,21 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         //songName = updateTitle();
         updateNot();
-        //Log.d(TAG, songName);
         mp.start();
+
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        //updateTitle();
-       // }
-
         return START_NOT_STICKY;
     }
 
     // create notification
     public void createNot(){
-        //updateTitle();
-        //mPlayer.start();
         // Notification implementation
         nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // int notifyID = 1;
         builder = new NotificationCompat.Builder(this);
 
         // Intent
@@ -302,7 +304,7 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         mPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/raw/gimme_shelter"));
     }
 
-    // get songs from raw folder
+    // get songs from raw resources
     public void getRawTracks(ArrayList<Integer> trackArray) throws IllegalAccessException {
         int rawFiles[] = {R.raw.gimme_shelter, R.raw.brown_sugar, R.raw.doom_and_gloom};
         for (int i = 0; i < rawFiles.length; i++) {
@@ -311,7 +313,6 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
 
         }
     }
-
 
     // Select track to be played
 
@@ -331,24 +332,21 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
     }
 
 
-    // Update Track Title
+    // Update Notification image
     public Bitmap updateImage(){
-        String trackTitle = "";
+       // String trackTitle = "";
         if (trackIndex == 0) {
             bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_logo);
-            trackTitle = trackNames[0];
+         //   trackTitle = trackNames[0];
         } else if (trackIndex == 1) {
             bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_two);
-            trackTitle = trackNames[1];
+         //   trackTitle = trackNames[1];
         } else if (trackIndex == 2) {
             bigPicture = BitmapFactory.decodeResource(getResources(), R.drawable.rolling_stones_three);
-            trackTitle = trackNames[2];
+         //   trackTitle = trackNames[2];
         }
         return bigPicture;
     }
-
-
-
 
     // return trackIndex to use in MainActivity
     public int getSongTitle() {
@@ -366,20 +364,26 @@ public class PlayerService extends Service  implements MediaPlayer.OnPreparedLis
         trackLooping = false;
     }
 
+
     // get current track position
-    public int getPostition() {
+    public int getPositition() {
         return mPlayer.getCurrentPosition();
 
     }
 
-    // play on orientatin change
-    public void keepPlaying(int position) {
-        mActivityResumed = true;
-        mPlayer.seekTo(position);
-        mPlayer.start();
-        mActivityResumed = false;
 
+    // get track duration
+    public int getDur() {
+
+        return mPlayer.getDuration();
     }
+
+
+
+
+
+
+
 
 
 
