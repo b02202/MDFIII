@@ -71,7 +71,7 @@ public class FormActivity extends ActionBarActivity {
         // Save file
         userData.saveFile(uDataArray, text1, this);
 
-        bundle.putSerializable(text1, userData);
+        //bundle.putSerializable(text1, userData);
 
         input1.setText("");
         input2.setText("");

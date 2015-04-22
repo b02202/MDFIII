@@ -9,8 +9,7 @@ import android.widget.RemoteViewsService;
 public class CollectionWidgetService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-       //return new CollectionWidgetViewFactory(getApplicationContext());
+       return new WidgetViewFactory(getApplicationContext());
 
-        return null;
     }
 }

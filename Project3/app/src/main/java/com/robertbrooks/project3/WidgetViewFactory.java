@@ -2,6 +2,7 @@ package com.robertbrooks.project3;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -14,6 +15,7 @@ import java.util.ArrayList;
  */
 public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
+    public static final String TAG = "WidgetViewFactory";
     private static final int ID_CONSTANT = 0x0101010;
 
     public ArrayList<UserData> uDataList;
@@ -23,7 +25,7 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
 
     public WidgetViewFactory(Context context) {
         wConext = context;
-        uDataList = new ArrayList<UserData>();
+        uDataList = new ArrayList<>();
 
     }
 
@@ -34,7 +36,9 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
             for (String file : fileNames) {
                 uData = UserData.readFile(file, wConext);
                 uDataList.add(uData);
+
             }
+            Log.d(TAG, uDataList.get(1).getUserData1());
         }
     }
 

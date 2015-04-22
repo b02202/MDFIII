@@ -7,13 +7,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 
+import com.robertbrooks.project3.CustomData.UserData;
+
 /**
  * Created by Bob on 4/22/2015.
  */
 public class WidgetProvider extends AppWidgetProvider {
 
-    public static final String ACTION_DETAILS = "com.robertbrooks.android.ACTION_DETAILS";
-    public static final String EXTRA_ITEM = "com.robertbrooks.android.WidgetProvider";
+    public static final String ACTION_DETAILS = "com.robertbrooks.ACTION_DETAILS";
+    public static final String EXTRA_ITEM = "com.robertbrooks.WidgetProvider";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -44,6 +46,16 @@ public class WidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
 
         // onRecieve action
+
+        if (intent.getAction().equals(ACTION_DETAILS)) {
+            UserData userData = (UserData)intent.getSerializableExtra(EXTRA_ITEM);
+            if (userData != null) {
+                Intent details = new Intent(context, WidgetDetailsActivity.class);
+                details.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                details.putExtra(WidgetDetailsActivity.EXTRA_ITEM, userData);
+                context.startActivity(details);
+            }
+        }
 
         super.onReceive(context, intent);
     }
