@@ -1,17 +1,30 @@
 package com.robertbrooks.project3;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.robertbrooks.project3.Fragments.ListFrag;
 
 
 public class MainActivity extends ActionBarActivity {
+
+    public static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState == null) {
+            ListFrag frag = ListFrag.newInstance();
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.list_frag_container, frag, ListFrag.TAG)
+                    .commit();
+        }
     }
 
 
@@ -35,5 +48,10 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void openFormActivity(View v) {
+        Intent intent = new Intent(this, FormActivity.class);
+        startActivity(intent);
     }
 }
