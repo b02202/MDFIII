@@ -56,7 +56,7 @@ public class UserData implements Serializable {
             ObjectOutputStream outStream = new ObjectOutputStream(fos);
             outStream.writeObject(this);
             outStream.close();
-            fos.close();
+            //fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

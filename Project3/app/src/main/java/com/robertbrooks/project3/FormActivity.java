@@ -1,5 +1,8 @@
 package com.robertbrooks.project3;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.ActionBarActivity;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 public class FormActivity extends ActionBarActivity {
 
     public static final String TAG = "FormActivity";
+    public static final String UPDATE_WIDGET = "com.robertbrooks.FormActivity";
 
     ArrayList<UserData> uDataArray;
     String[] fileNames;
@@ -79,7 +83,23 @@ public class FormActivity extends ActionBarActivity {
 
         Log.d(TAG, "data saved");
 
+        // update widget
+        updateWidget();
+    }
 
+    // update widget
+
+    public void updateWidget() {
+        // get AppWidgetManager Instance
+        AppWidgetManager AWP = AppWidgetManager.getInstance(getApplicationContext());
+        // Component Name
+        ComponentName cn = new ComponentName(getApplication(), WidgetProvider.class);
+        // get Widget Ids
+        int widgetIds[] = AWP.getAppWidgetIds(cn);
+        // loop through ids and call WidgetViewFactory onDataSetChanged()
+        for (int widgetID : widgetIds) {
+            AWP.notifyAppWidgetViewDataChanged(widgetID, R.id.data_list);
+        }
 
     }
 }

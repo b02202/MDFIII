@@ -19,22 +19,24 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
     private static final int ID_CONSTANT = 0x0101010;
 
     public ArrayList<UserData> uDataList;
-    private Context wConext;
+    private Context wContext;
     String[] fileNames;
     UserData uData;
+    RemoteViews dataView;
+
 
     public WidgetViewFactory(Context context) {
-        wConext = context;
+        wContext = context;
         uDataList = new ArrayList<>();
 
     }
 
     @Override
     public void onCreate() {
-        fileNames = wConext.getApplicationContext().fileList();
+        fileNames = wContext.getApplicationContext().fileList();
         if (fileNames.length != 0) {
             for (String file : fileNames) {
-                uData = UserData.readFile(file, wConext);
+                uData = UserData.readFile(file, wContext);
                 uDataList.add(uData);
 
             }
@@ -44,7 +46,16 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
 
     @Override
     public void onDataSetChanged() {
+        uDataList.clear();
+        fileNames = wContext.getApplicationContext().fileList();
+        if (fileNames.length != 0) {
+            for (String file : fileNames) {
+                uData = UserData.readFile(file, wContext);
+                uDataList.add(uData);
 
+            }
+            Log.d(TAG, uDataList.get(1).getUserData1());
+        }
     }
 
     @Override
@@ -67,15 +78,11 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
 
         UserData data = uDataList.get(position);
 
-        RemoteViews dataView = new RemoteViews(wConext.getPackageName(), R.layout.data_item);
+        dataView = new RemoteViews(wContext.getPackageName(), R.layout.data_item);
 
-        String title = data.getUserData1();
-        String subTitle = data.getUserData2();
-        String content = data.getUserData3();
-
-        dataView.setTextViewText(R.id.itemTitle, title);
-        dataView.setTextViewText(R.id.itemSubTitle, subTitle);
-        dataView.setTextViewText(R.id.itemContent, content);
+        dataView.setTextViewText(R.id.itemTitle, data.getUserData1());
+        dataView.setTextViewText(R.id.itemSubTitle, data.getUserData2());
+        dataView.setTextViewText(R.id.itemContent, data.getUserData3());
 
         Intent intent = new Intent();
         intent.putExtra(WidgetProvider.EXTRA_ITEM, data);
@@ -100,4 +107,6 @@ public class WidgetViewFactory implements RemoteViewsService.RemoteViewsFactory 
     public boolean hasStableIds() {
         return true;
     }
+
+
 }

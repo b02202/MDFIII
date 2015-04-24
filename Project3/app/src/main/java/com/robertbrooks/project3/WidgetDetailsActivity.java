@@ -17,7 +17,7 @@ public class WidgetDetailsActivity extends Activity {
     ArrayList<UserData> itemList;
     UserData uData;
 
-    public static final String EXTRA_ITEM = "com.robertbrooks.android.WidgetDetailsActivity.EXTRA_ITEM";
+    public static final String EXTRA_ITEM = "com.robertbrooks.WidgetDetailsActivity.EXTRA_ITEM";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

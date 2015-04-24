@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.robertbrooks.project3.Fragments.DetailFrag;
 import com.robertbrooks.project3.Fragments.FormFrag;
@@ -13,6 +14,7 @@ import com.robertbrooks.project3.Fragments.FormFrag;
  */
 public class DetailActivity extends ActionBarActivity {
     public static final String TAG = "DetailActivity";
+    public static final String EXTRA_ITEM = "com.robertbrooks.WidgetProvider";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +28,9 @@ public class DetailActivity extends ActionBarActivity {
                     .replace(R.id.detail_frag_container, frag, DetailFrag.TAG)
                     .commit();
         }
+
+
+        //tv.setText("working");
     }
 
     @Override

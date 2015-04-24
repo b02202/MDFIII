@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.robertbrooks.project3.CustomData.UserData;
+import com.robertbrooks.project3.DetailActivity;
 import com.robertbrooks.project3.R;
 
 /**
@@ -17,6 +19,7 @@ import com.robertbrooks.project3.R;
 public class DetailFrag extends Fragment {
 
     public static final String TAG = "DetailFrag.TAG";
+    public static final String EXTRA_ITEM = "com.robertbrooks.DetailFrag.EXTRA_ITEM";
 
     TextView mDetailText;
     String recievedText;
@@ -39,11 +42,26 @@ public class DetailFrag extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         mDetailText = (TextView) getActivity().findViewById(R.id.detailText);
-
         Intent intent = getActivity().getIntent();
-        recievedText = intent.getExtras().getString("itemText");
-        mDetailText.setText(intent.getExtras().getString("itemText"));
+
+
+
+            recievedText = intent.getExtras().getString("itemText");
+            mDetailText.setText(intent.getExtras().getString("itemText"));
+
+
+
+
+
+
+        //Intent intent = getActivity().getIntent();
+
 
 
     }
+
+    /*@Override
+    public void onStart() {
+        super.onStart();
+    }*/
 }
