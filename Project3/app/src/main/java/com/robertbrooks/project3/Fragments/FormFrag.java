@@ -1,8 +1,9 @@
+/*FormFrag.java
+* Robert Brooks */
+
 package com.robertbrooks.project3.Fragments;
 
 import android.app.Fragment;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -13,7 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.robertbrooks.project3.R;
-import com.robertbrooks.project3.WidgetProvider;
 
 /**
  * Created by Bob on 4/21/2015.
@@ -52,6 +52,4 @@ public class FormFrag extends Fragment {
         mSaveBtn = (Button) view.findViewById(R.id.save_btn);
 
     }
-
-
 }

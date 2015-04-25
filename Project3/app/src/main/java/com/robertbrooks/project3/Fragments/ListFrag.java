@@ -1,18 +1,16 @@
+/*ListFrag.java
+* Robert Brooks*/
 package com.robertbrooks.project3.Fragments;
 
 import android.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
-import android.app.ListFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
 import com.robertbrooks.project3.CustomData.UserData;
 import com.robertbrooks.project3.DetailActivity;
 import com.robertbrooks.project3.R;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 public class ListFrag extends Fragment {
 
     ListView fListView;
-    ArrayList<UserData> uList;
     ArrayList<UserData> itemList;
 
 
@@ -71,8 +68,6 @@ public class ListFrag extends Fragment {
 
     // populate listView
     public void popListView() {
-
-
         String[] fileNames = getActivity().getApplicationContext().fileList();
         ArrayAdapter listAD = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1);
         itemList = new ArrayList<>();
@@ -90,9 +85,6 @@ public class ListFrag extends Fragment {
             }
             fListView.setAdapter(listAD);
         }
-
-
-
     }
 
     @Override

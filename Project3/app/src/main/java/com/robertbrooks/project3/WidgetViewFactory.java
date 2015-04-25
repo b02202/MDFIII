@@ -1,3 +1,5 @@
+/*WidgetViewFactory.java
+* Robert Brooks*/
 package com.robertbrooks.project3;
 
 import android.content.Context;
@@ -5,9 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
-
 import com.robertbrooks.project3.CustomData.UserData;
-
 import java.util.ArrayList;
 
 /**

@@ -1,3 +1,6 @@
+/*MainActivity.java
+* Robert Brooks*/
+
 package com.robertbrooks.project3;
 
 import android.content.Intent;

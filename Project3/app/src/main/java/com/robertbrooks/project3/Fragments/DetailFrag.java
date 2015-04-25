@@ -1,3 +1,5 @@
+/*DetailFrag.java
+* Robert Brooks */
 package com.robertbrooks.project3.Fragments;
 
 import android.app.Fragment;
@@ -8,9 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import com.robertbrooks.project3.CustomData.UserData;
-import com.robertbrooks.project3.DetailActivity;
 import com.robertbrooks.project3.R;
 
 /**
@@ -19,10 +18,9 @@ import com.robertbrooks.project3.R;
 public class DetailFrag extends Fragment {
 
     public static final String TAG = "DetailFrag.TAG";
-    public static final String EXTRA_ITEM = "com.robertbrooks.DetailFrag.EXTRA_ITEM";
 
     TextView mDetailText;
-    String recievedText;
+    String receivedText;
 
     public static DetailFrag newInstance() {
         DetailFrag frag = new DetailFrag();
@@ -32,6 +30,9 @@ public class DetailFrag extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+
+        /*String detailText = getArguments().getString("detail");*/
         View view = inflater.inflate(R.layout.detail_fragment, container, false);
 
         return view;
@@ -44,24 +45,9 @@ public class DetailFrag extends Fragment {
         mDetailText = (TextView) getActivity().findViewById(R.id.detailText);
         Intent intent = getActivity().getIntent();
 
-
-
-            recievedText = intent.getExtras().getString("itemText");
-            mDetailText.setText(intent.getExtras().getString("itemText"));
-
-
-
-
-
-
-        //Intent intent = getActivity().getIntent();
-
-
+        receivedText = intent.getExtras().getString("itemText");
+        mDetailText.setText(intent.getExtras().getString("itemText"));
 
     }
 
-    /*@Override
-    public void onStart() {
-        super.onStart();
-    }*/
 }

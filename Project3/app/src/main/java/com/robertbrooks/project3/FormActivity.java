@@ -1,18 +1,16 @@
+/*FormActivity.java
+* Robert Brooks*/
 package com.robertbrooks.project3;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
 import com.robertbrooks.project3.CustomData.UserData;
 import com.robertbrooks.project3.Fragments.FormFrag;
-
 import java.util.ArrayList;
 
 /**
@@ -21,7 +19,6 @@ import java.util.ArrayList;
 public class FormActivity extends ActionBarActivity {
 
     public static final String TAG = "FormActivity";
-    public static final String UPDATE_WIDGET = "com.robertbrooks.FormActivity";
 
     ArrayList<UserData> uDataArray;
     String[] fileNames;
@@ -75,8 +72,7 @@ public class FormActivity extends ActionBarActivity {
         // Save file
         userData.saveFile(uDataArray, text1, this);
 
-        //bundle.putSerializable(text1, userData);
-
+        // reset form
         input1.setText("");
         input2.setText("");
         input3.setText("");
@@ -88,7 +84,6 @@ public class FormActivity extends ActionBarActivity {
     }
 
     // update widget
-
     public void updateWidget() {
         // get AppWidgetManager Instance
         AppWidgetManager AWP = AppWidgetManager.getInstance(getApplicationContext());
