@@ -1,5 +1,5 @@
 /*WidgetProvider.java
-* Robert Brooks*/
+* Robert Brooks */
 package com.robertbrooks.project3;
 
 import android.app.PendingIntent;
