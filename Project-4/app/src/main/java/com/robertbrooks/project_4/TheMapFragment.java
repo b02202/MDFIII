@@ -1,8 +1,11 @@
 package com.robertbrooks.project_4;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,27 +19,65 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
+import java.util.ArrayList;
+
 /**
  * Created by Bob on 4/27/2015.
  */
 public class TheMapFragment extends MapFragment implements OnInfoWindowClickListener, OnMapClickListener {
 
+    private static final String TAG = "TheMapFragment.TAG";
     GoogleMap mMap;
+    Double latitude;
+    Double longitude;
+    String[] fileNames;
+    ArrayList<UserData> userDataList;
+    UserData uData;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // Google Map
         mMap = getMap();
-        mMap.addMarker(new MarkerOptions().position(new LatLng(28.590647,-81.304510)).title("MDVBS Faculty Offices"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(28.591748,-81.305910)).title("Crispers"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(28.595842,-81.304188)).title("Full Sail Live"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(28.596591,-81.301302)).title("Advising"));
+
+        uData = new UserData();
+        userDataList = new ArrayList<>();
+
+
+        fileNames = getActivity().getApplicationContext().getDir("p4Dir", Context.MODE_PRIVATE).list();
+
+
+            Log.d(TAG, "File Names = " + fileNames);
+            // load files
+
+
+        if (fileNames.length != 0) {
+            for (String file : fileNames) {
+                uData = UserData.readFile(file, getActivity());
+
+                userDataList.add(uData);
+                Log.d(TAG, "LAT TEST = " + userDataList.get(0));
+
+            }
+
+            for (int i = 0; i < userDataList.size(); i++) {
+                Log.d(TAG, "LAt = " + userDataList.get(i).getLocLat());
+                latitude = userDataList.get(i).getLocLat();
+                longitude = userDataList.get(i).getLocLong();
+                String title = userDataList.get(i).getUserData1();
+                mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title(title));
+            }
+        }
+
+
+
 
         mMap.setInfoWindowAdapter(new MarkerAdapter());
         mMap.setOnInfoWindowClickListener(this);
         mMap.setOnMapClickListener(this);
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(28.593770, -81.303797), 16));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16));
     }
 
     @Override

@@ -13,11 +13,16 @@
         android:layout_height="wrap_content"
         android:id="@+id/editText2" />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText3" />
 
+
+    <Button
+        android:id="@+id/camera_btn"
+        android:onClick="openCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="20dp"
+        android:text="Take Picture"
+        android:layout_gravity="right" />
     <Button
     android:id="@+id/save_btn"
     android:onClick="saveData"
@@ -35,5 +40,13 @@
         android:layout_marginRight="20dp"
         android:text="View"
         android:layout_gravity="right" />
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Image View"
+        android:layout_marginTop="10dp"/>
+
 
 </LinearLayout>
