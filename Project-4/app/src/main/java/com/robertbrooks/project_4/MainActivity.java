@@ -1,8 +1,9 @@
+/*MainActivity.java
+* Robert Brooks*/
 package com.robertbrooks.project_4;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.View;
 

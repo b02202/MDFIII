@@ -1,3 +1,5 @@
+/*ViewActivity.java
+* Robert Brooks */
 package com.robertbrooks.project_4;
 
 import android.app.Activity;

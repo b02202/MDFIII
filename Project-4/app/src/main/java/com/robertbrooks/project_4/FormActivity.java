@@ -1,3 +1,5 @@
+/*FormActivity.java
+* Robert Brooks*/
 package com.robertbrooks.project_4;
 
 import android.app.Activity;
@@ -20,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.robertbrooks.project_4.Fragments.FormFragment;
 
 import java.io.File;
@@ -48,6 +51,10 @@ public class FormActivity extends Activity implements LocationListener {
     LocationManager locMgr;
     Double locLat;
     Double locLong;
+    Intent viewIntent;
+    String text1;
+    String text2;
+    LatLng latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,15 +73,8 @@ public class FormActivity extends Activity implements LocationListener {
 
         fragment = (FormFragment) getFragmentManager().findFragmentByTag(FormFragment.TAG);
 
-        // load files
-        /*if (filenames.length != 0) {
-            for (String file : filenames) {
-                uData = UserData.readFile(file, this);
-                userDataList.add(uData);
-            }
-
-        }*/
-
+        // View Intent
+        viewIntent = new Intent(this, ViewActivity.class);
     }
 
 
@@ -85,17 +85,48 @@ public class FormActivity extends Activity implements LocationListener {
         locMgr = (LocationManager)getSystemService(LOCATION_SERVICE);
 
         // get user input
-        String text1 = input1.getText().toString();
-        String text2 = input2.getText().toString();
+        text1 = input1.getText().toString();
+        text2 = input2.getText().toString();
+
         gpsCheck();
-
-
-        // set UserData object
         UserData userData = new UserData();
-        userData.setLocLat(locLat);
-        userData.setLocLong(locLong);
-        userData.setUserData1(text1);
-        userData.setUserData2(text2);
+        // get bundle intent from Map Long Click
+        Bundle mapBundle = getIntent().getParcelableExtra("position");
+        if (mapBundle != null) {
+            LatLng mapPosition = mapBundle.getParcelable("map_position");
+
+
+        // Set UserData object
+
+        if (mapPosition != null) {
+
+            userData.setLocLat(mapPosition.latitude);
+            userData.setLocLong(mapPosition.longitude);
+            userData.setUserData1(text1);
+            userData.setUserData2(text2);
+
+            if (imgUri != null) {
+                String imagePath = uriToString(imgUri);
+                userData.setImageUriString(imagePath);
+            }
+        }
+
+        } else {
+            latLng = new LatLng(locLat, locLong);
+            userData.setLocLat(locLat);
+            userData.setLocLong(locLong);
+            userData.setUserData1(text1);
+            userData.setUserData2(text2);
+        }
+
+        // image uri
+        if (imgUri != null) {
+            String imagePath = uriToString(imgUri);
+            userData.setImageUriString(imagePath);
+        }
+
+        userDataList.add(userData);
+
         // Save Data
         userData.saveFile(userDataList, text1, this);
         // reset form
@@ -107,6 +138,7 @@ public class FormActivity extends Activity implements LocationListener {
 
         Log.d(TAG, "Text1 = " + userData.getUserData1());
         Log.d(TAG, "Text2 = " + userData.getUserData2());
+        //Log.d(TAG, "Lat/Lng = " +  userData.getLatLng());
         Log.d(TAG, "LAT = " + userData.getLocLat());
         Log.d(TAG, "LONG = " + userData.getLocLong());
 
@@ -122,6 +154,7 @@ public class FormActivity extends Activity implements LocationListener {
             if (location != null) {
                 locLat = location.getLatitude();
                 locLong = location.getLongitude();
+
             }
         } else {
             new AlertDialog.Builder(this).setTitle("GPS is Unavailable").setMessage("GPS must be enabled")
@@ -141,9 +174,19 @@ public class FormActivity extends Activity implements LocationListener {
 
 
     public void openView(View v) {
+        TextView input1 = (TextView) findViewById(R.id.editText1);
+        TextView input2 = (TextView) findViewById(R.id.editText2);
 
-        Intent intent = new Intent(this, ViewActivity.class);
-        startActivity(intent);
+       // viewIntent = new Intent(this, ViewActivity.class);
+
+        String dataString = input1.getText().toString() + "\n\n"
+                + input2.getText().toString();
+        if (dataString != null) {
+            viewIntent.putExtra("item_text", dataString);
+            startActivity(viewIntent);
+        }
+
+
     }
 
     public void openCamera(View v) {
@@ -183,13 +226,21 @@ public class FormActivity extends Activity implements LocationListener {
             if (imgUri != null) {
                 //imgView.setImageBitmap(BitmapFactory.decodeFile(imgUri.getPath()));
                 populateImage(imgUri);
-                Log.d(TAG, "Checkpoint popImage");
+
                 addImageToGallery(imgUri);
-                Log.d(TAG, "Checkpoint addImageToGallery");
+                // send image uri to view
+                viewIntent.putExtra("imgUri", imgUri.toString());
+
             } else {
                 imgView.setImageBitmap((Bitmap)data.getParcelableExtra("data"));
             }
         }
+    }
+
+    // convert image uri to string to save path for use later
+    public String uriToString(Uri imageUri) {
+        String stringUri = imageUri.toString();
+        return stringUri;
     }
 
     // add image to gallery
@@ -241,5 +292,11 @@ public class FormActivity extends Activity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    // set UserData
+    public void setUserData(UserData userData, String input1, String input2, LatLng location) {
+        userData.setUserData1(input1);
+        userData.setUserData2(input2);
     }
 }

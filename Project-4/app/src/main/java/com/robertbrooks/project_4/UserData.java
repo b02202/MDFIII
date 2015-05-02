@@ -1,3 +1,5 @@
+/*UserData.java
+* Robert Brooks*/
 package com.robertbrooks.project_4;
 
 import android.content.Context;
@@ -24,8 +26,21 @@ public class UserData implements Serializable {
     Double locLong;
     String userData1;
     String userData2;
+    String imageUriString;
+
 
     // Getters / Setters
+
+
+
+
+    public String getImageUriString() {
+        return imageUriString;
+    }
+
+    public void setImageUriString(String imageUriString) {
+        this.imageUriString = imageUriString;
+    }
 
     public Double getLocLong() {
         return locLong;
